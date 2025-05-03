@@ -6,4 +6,5 @@ more test using push
 clang-tidy test push
 new clang tidy test kyunghee push
 clang tidy code until install
+cppcheck test
 
