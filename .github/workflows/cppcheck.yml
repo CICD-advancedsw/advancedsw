@@ -1,21 +1,31 @@
-name: cppcheck-action-test
-on: [push]
+name: Cppcheck Static Analysis
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
 
 jobs:
-  build:
-    name: cppcheck-test
+  cppcheck:
+    name: Run Cppcheck
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v2
-          
-      - name: cppcheck
-        uses: deep5050/cppcheck-action@main
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Install cppcheck
+        run: sudo apt update && sudo apt install cppcheck -y
+
+      - name: Run cppcheck
+        run: |
+          cppcheck --enable=all --inconclusive --quiet --force --std=c++17 \
+            --suppress=missingIncludeSystem \
+            --output-file=cppcheck-report.txt \
+            src/
+
+      - name: Upload cppcheck report as artifact
+        uses: actions/upload-artifact@v3
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN}}
-          
-        
-      - name: publish report    
-        uses: mikeal/publish-to-github-action@master
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          BRANCH_NAME: 'main' # your branch name goes here
+          name: cppcheck-report
+          path: cppcheck-report.txt
