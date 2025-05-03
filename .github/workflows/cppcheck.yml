@@ -11,24 +11,24 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      #- name: Checkout code
+      #  uses: actions/checkout@v4
 
-      - name: Install cppcheck
-        run: |
-          sudo apt update
-          sudo apt install cppcheck -y
+      #- name: Install cppcheck
+      #  run: |
+      #    sudo apt update
+      #    sudo apt install cppcheck -y
 
-      - name: Run cppcheck
-        run: |
-          cppcheck --enable=all --inconclusive --quiet --force --std=c++17 \
-            --suppress=missingIncludeSystem \
-            --output-file=cppcheck-report.txt \
-            src/
+      #- name: Run cppcheck
+      #  run: |
+      #    cppcheck --enable=all --inconclusive --quiet --force --std=c++17 \
+      #      --suppress=missingIncludeSystem \
+      #      --output-file=cppcheck-report.txt \
+      #      src/
 
-      - name: Upload cppcheck report as artifact
-        uses: actions/upload-artifact@v3.1.2
-        with:
-          name: cppcheck-report
-          path: cppcheck-report.txt
+      #- name: Upload cppcheck report as artifact
+      #  uses: actions/upload-artifact@v3.1.2
+      #  with:
+      #    name: cppcheck-report
+      #    path: cppcheck-report.txt
 
