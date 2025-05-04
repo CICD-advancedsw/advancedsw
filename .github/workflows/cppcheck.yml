@@ -12,23 +12,22 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v3
 
       - name: Install cppcheck
         run: |
           sudo apt update
           sudo apt install cppcheck -y
 
-      - name: Run cppcheck
+      - name: Run cppcheck on src/
         run: |
           cppcheck --enable=all --inconclusive --quiet --force --std=c++17 \
             --suppress=missingIncludeSystem \
             --output-file=cppcheck-report.txt \
-            src/
+            ./
 
-      - name: Upload cppcheck report as artifact
-        uses: actions/upload-artifact@v3.1.2
+      - name: Upload cppcheck report
+        uses: actions/upload-artifact@v4
         with:
           name: cppcheck-report
           path: cppcheck-report.txt
-
