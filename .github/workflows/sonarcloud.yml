@@ -1,4 +1,4 @@
-name: SonarCloud Analysis
+name: SonarCloud C++ Analysis
 
 on:
   push:
@@ -7,32 +7,34 @@ on:
 
 jobs:
   build:
-    name: Build and Analyze on SonarCloud
+    name: Analyze with SonarCloud
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Set up JDK 17
-        uses: actions/setup-java@v3
-        with:
-          distribution: 'temurin'
-          java-version: '17'
+      - name: Install dependencies
+        run: |
+          sudo apt update
+          sudo apt install build-essential unzip wget -y
 
-      - name: Cache SonarCloud packages
-        uses: actions/cache@v3
-        with:
-          path: ~/.sonar/cache
-          key: ${{ runner.os }}-sonar
-          restore-keys: ${{ runner.os }}-sonar
+      - name: Download and extract build-wrapper
+        run: |
+          wget https://sonarcloud.io/static/cpp/build-wrapper-linux-x86.zip
+          unzip build-wrapper-linux-x86.zip
 
-      - name: SonarCloud Scan
-        uses: SonarSource/sonarcloud-github-action@v2
-        with:
-          projectKey: virtuoso108_advancedsw
-          organization: virtuoso108
-          projectBaseDir: .
+      - name: Build project with build-wrapper
+        run: |
+          mkdir bw-output
+          ./build-wrapper-linux-x86/build-wrapper-linux-x86-64 --out-dir bw-output g++ main.cpp -o main
+
+      - name: Download and run SonarScanner
+        run: |
+          wget https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-5.0.1.3006-linux.zip
+          unzip sonar-scanner-cli-5.0.1.3006-linux.zip
+          sonar-scanner-5.0.1.3006-linux/bin/sonar-scanner
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
