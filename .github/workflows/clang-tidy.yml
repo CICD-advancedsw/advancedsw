@@ -1,4 +1,4 @@
-name: Clang-Tidy
+name: Run Clang-Tidy (No CMake)
 
 on:
   push:
@@ -10,21 +10,14 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-      - name: Install clang-tidy and build tools
+      - name: Install clang-tidy
         run: |
           sudo apt update
-          sudo apt install clang-tidy cmake build-essential -y
+          sudo apt install clang-tidy -y
 
-      - name: Configure with compile_commands.json
+      - name: Run clang-tidy
         run: |
-          mkdir build
-          #cd build
-          #cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=ON ..
-          cmake -S . -B build -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
-
-      #- name: Run clang-tidy
-      #  run: |
-      #    cd build
-          #clang-tidy ../src/*.cpp -p .
+          clang-tidy main.cpp -- -std=c++17
