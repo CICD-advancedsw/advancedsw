@@ -30,7 +30,9 @@ jobs:
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@v2
         with:
-          projectBaseDir: .
+        projectKey: virtuoso108_advancedsw
+        organization: virtuoso108
+        projectBaseDir: .
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # PR 상태 표시에 필요
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
