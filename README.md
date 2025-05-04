@@ -22,6 +22,7 @@ sonarcloud 8th test
 clangtidy 2nd test
 clangtidy 3rd test
 clangtidy 4th test
+cppcheck 6th test
 
 
 
