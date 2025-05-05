@@ -31,3 +31,11 @@ jobs:
         with:
           name: cppcheck-report
           path: cppcheck-report.txt
+
+
+      - name: Notify Slack of success
+        if: success()
+        run: |
+          curl -X POST -H 'Content-type: application/json' \
+            --data '{"text":"✅ Cppcheck passed: No issues found in ${{ github.repository }}"}' \
+            ${{ secrets.SLACK_WEBHOOK_URL }}        
