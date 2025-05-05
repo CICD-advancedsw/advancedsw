@@ -19,10 +19,14 @@ jobs:
           sudo apt update
           sudo apt install build-essential unzip wget -y
 
-      - name: Download and extract build-wrapper
+      #- name: Download and extract build-wrapper
+      #  run: |
+      #    wget https://sonarcloud.io/static/cpp/build-wrapper-linux-x86.zip
+      #    unzip build-wrapper-linux-x86.zip
+
+      - name: Extract local build-wrapper
         run: |
-          wget https://sonarcloud.io/static/cpp/build-wrapper-linux-x86.zip
-          unzip build-wrapper-linux-x86.zip
+          unzip tools/build-wrapper-linux-x86.zip
 
       - name: Build project with build-wrapper
         run: |
