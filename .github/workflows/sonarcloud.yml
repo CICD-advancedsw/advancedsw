@@ -42,3 +42,10 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Notify Slack (Success)
+        if: success()
+        run: |
+          curl -X POST -H 'Content-type: application/json' \
+            --data '{"text":"✅ SonarCloud analysis succeeded for ${{ github.repository }} on `${{ github.ref_name }}`"}' \
+            ${{ secrets.SLACK_WEBHOOK_URL }}
+
