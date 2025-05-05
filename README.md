@@ -24,6 +24,7 @@ clangtidy 3rd test
 clangtidy 4th test
 cppcheck 6th test
 slack test
+clang tidy slack test
 
 
 
