@@ -21,3 +21,11 @@ jobs:
       - name: Run clang-tidy
         run: |
           clang-tidy main.cpp -- -std=c++17
+
+      - name: Send success message to Slack
+        if: success()
+        run: |
+          curl -X POST -H 'Content-type: application/json' \
+            --data '{"text":"✅ Clang-Tidy passed on main branch!"}' \
+            ${{ secrets.SLACK_WEBHOOK_URL }}
+      
