@@ -29,3 +29,9 @@ jobs:
             --data '{"text":"✅ Clang-Tidy passed on main branch!"}' \
             ${{ secrets.SLACK_WEBHOOK_URL }}
       
+      - name: Notify Slack (Failure)
+        if: failure()
+        run: |
+          curl -X POST -H 'Content-type: application/json' \
+            --data '{"text":"❌ clang-tidy failed for `${{ github.repository }}`."}' \
+            ${{ secrets.SLACK_WEBHOOK_URL }}
