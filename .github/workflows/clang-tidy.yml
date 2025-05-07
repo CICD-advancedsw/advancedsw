@@ -32,12 +32,28 @@ jobs:
           echo "::set-output name=warnings::$WARNINGS"
           echo "::set-output name=errors::$ERRORS"
 
+      - name: Prepare Slack message
+        id: slack_message
+        run: |
+          echo "SLACK_MESSAGE<<EOF" >> $GITHUB_ENV
+          echo "🛠️ *Clang-Tidy Report* for \`${{ github.repository }}\`" >> $GITHUB_ENV
+          echo "" >> $GITHUB_ENV
+          echo "*Warnings:* $WARNINGS" >> $GITHUB_ENV
+          echo "*Errors:* $ERRORS" >> $GITHUB_ENV
+          echo "" >> $GITHUB_ENV
+          echo "Commit: ${{ github.sha }}" >> $GITHUB_ENV
+          echo "Author: ${{ github.actor }}" >> $GITHUB_ENV
+          echo "Workflow: ${{ github.workflow }}" >> $GITHUB_ENV
+          echo "Run: ${{ github.run_number }}" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+
       - name: Send Slack notification
         uses: slackapi/slack-github-action@v1.23.0
         with:
           payload: |
             {
-            "text": ${{ toJSON(github.event.head_commit.message) }}
+              "text": "${{ env.SLACK_MESSAGE }}"
             }
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
