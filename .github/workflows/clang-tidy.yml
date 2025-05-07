@@ -18,6 +18,10 @@ jobs:
           sudo apt update
           sudo apt install clang-tidy -y
 
+      - name: Install jq
+        run: |
+         sudo apt install -y jq
+
       #- name: Run clang-tidy
       #  run: |
       #    clang-tidy main.cpp -- -std=c++17
