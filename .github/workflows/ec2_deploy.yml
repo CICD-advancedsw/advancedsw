@@ -17,5 +17,9 @@ jobs:
           username: ${{ secrets.EC2_USER }}         # ec2-user (Amazon Linux), ubuntu (Ubuntu 등)
           key: ${{ secrets.SSH_PRIVATE_KEY }}   # .pem 키 (GitHub Secret에 저장한 값)
           script: |
-            cd ~/googletest-work/advancedsw     # 실제 프로젝트 디렉토리로 이동
-            git pull origin main                # 최신 코드 가져오기
+           cd ~
+          if [ ! -d advancedsw ]; then
+             git clone https://github.com/virtuoso108/advancedsw.git
+          fi
+          cd advancedsw
+          git pull origin main
