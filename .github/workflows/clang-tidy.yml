@@ -52,7 +52,7 @@ jobs:
         with:
           payload: |
             {
-              "text": "${{ env.SLACK_MESSAGE }}"
+              "text": "${{ toJSON(env.SLACK_MESSAGE) }}"
             }
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
