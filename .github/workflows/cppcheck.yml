@@ -19,12 +19,37 @@ jobs:
           sudo apt update
           sudo apt install cppcheck -y
 
+      - name: Install jq
+        run: |
+          sudo apt install -y jq      
+
       - name: Run cppcheck on src/
         run: |
           cppcheck --enable=all --inconclusive --quiet --force --std=c++17 \
             --suppress=missingIncludeSystem \
             --output-file=cppcheck-report.txt \
-            ./
+            ./ || true
+
+      - name: Count issues by severity
+        id: count_issues
+        run: |
+          ERRORS=$(grep -c "error:" cppcheck-report.txt || true)
+          WARNINGS=$(grep -c "warning:" cppcheck-report.txt || true)
+          STYLE=$(grep -c "style:" cppcheck-report.txt || true)
+          PERFORMANCE=$(grep -c "performance:" cppcheck-report.txt || true)
+          TOTAL=$(wc -l < cppcheck-report.txt || true)
+
+          echo "Errors: $ERRORS"
+          echo "Warnings: $WARNINGS"
+          echo "Style: $STYLE"
+          echo "Performance: $PERFORMANCE"
+          echo "Total: $TOTAL"
+
+          echo "ERRORS=$ERRORS" >> $GITHUB_OUTPUT
+          echo "WARNINGS=$WARNINGS" >> $GITHUB_OUTPUT
+          echo "STYLE=$STYLE" >> $GITHUB_OUTPUT
+          echo "PERFORMANCE=$PERFORMANCE" >> $GITHUB_OUTPUT
+          echo "TOTAL=$TOTAL" >> $GITHUB_OUTPUT
 
       - name: Upload cppcheck report
         uses: actions/upload-artifact@v4
@@ -32,10 +57,33 @@ jobs:
           name: cppcheck-report
           path: cppcheck-report.txt
 
-
-      - name: Notify Slack of success
-        if: success()
+      - name: Notify Slack of result
+        if: always()
         run: |
-          curl -X POST -H 'Content-type: application/json' \
-            --data '{"text":"✅ Cppcheck passed: No issues found in ${{ github.repository }}"}' \
-            ${{ secrets.SLACK_WEBHOOK_URL }}        
+          MESSAGE="📝 *Cppcheck Analysis for* \`${{ github.repository }}\`:
+          • *Errors:* ${{ steps.count_issues.outputs.ERRORS }}
+          • *Warnings:* ${{ steps.count_issues.outputs.WARNINGS }}
+          • *Style issues:* ${{ steps.count_issues.outputs.STYLE }}
+          • *Performance issues:* ${{ steps.count_issues.outputs.PERFORMANCE }}
+          • *Total issues:* ${{ steps.count_issues.outputs.TOTAL }}
+          
+          🔎 *Top issues:*
+          • $(head -n 10 cppcheck-report.txt | tr '\n' '\n• ')"
+
+          # Slack은 \n을 줄바꿈으로 자동 처리 안 하므로 echo -e 사용
+          MESSAGE=$(echo -e "$MESSAGE")
+
+          payload=$(jq -n --arg text "$MESSAGE" '{text: $text}')
+
+          response=$(curl -s -w "%{http_code}" -o response.txt -X POST -H 'Content-type: application/json' \
+            --data "$payload" \
+            ${{ secrets.SLACK_WEBHOOK_URL }})
+
+          echo "Slack API HTTP status code: $response"
+          echo "Slack API response body:"
+          cat response.txt
+
+          if [ "$response" -ne 200 ]; then
+            echo "❌ Slack notification failed with status $response"
+            exit 1
+          fi
