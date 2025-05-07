@@ -1,0 +1,21 @@
+name: Deploy to EC2
+
+on:
+  push:
+    branches:
+      - main  # main 브랜치에 push될 때만 실행
+
+jobs:
+  deploy:
+    runs-on: self-hosted
+
+    steps:
+      - name: SSH into EC2 and pull latest code
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.EC2_IP }}             # EC2 퍼블릭 IP
+          username: ${{ secrets.EC2_USER }}         # ec2-user (Amazon Linux), ubuntu (Ubuntu 등)
+          key: ${{ secrets.SSH_PRIVATE_KEY }}   # .pem 키 (GitHub Secret에 저장한 값)
+          script: |
+            cd ~/googletest-work/advancedsw     # 실제 프로젝트 디렉토리로 이동
+            git pull origin main                # 최신 코드 가져오기
