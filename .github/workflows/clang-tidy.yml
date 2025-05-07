@@ -37,26 +37,7 @@ jobs:
         with:
           payload: |
             {
-              "text": "🛠️ Clang-Tidy 결과 보고",
-              "attachments": [
-                {
-                  "color": "${{ steps.parse.outputs.errors != '0' && 'danger' || (steps.parse.outputs.warnings != '0' && 'warning' || 'good') }}",
-                  "fields": [
-                    {
-                      "title": "⚠️ 경고 수",
-                      "value": "${{ steps.parse.outputs.warnings }}",
-                      "short": true
-                    },
-                    {
-                      "title": "❌ 오류 수",
-                      "value": "${{ steps.parse.outputs.errors }}",
-                      "short": true
-                    }
-                  ],
-                  "footer": "리포지토리: ${{ github.repository }}",
-                  "ts": $(date +%s)
-                }
-              ]
+            "text": ${{ toJSON(github.event.head_commit.message) }}
             }
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
