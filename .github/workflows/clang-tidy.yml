@@ -2,7 +2,7 @@ name: Run Clang-Tidy (No CMake)
 
 on:
   push:
-    branches: [ virtuoso108-patch-1 ]
+    branches: [ main ]
   pull_request:
 
 jobs:
