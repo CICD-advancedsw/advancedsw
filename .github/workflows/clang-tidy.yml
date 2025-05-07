@@ -18,28 +18,13 @@ jobs:
           sudo apt update
           sudo apt install clang-tidy -y
 
-      - name: Install jq
-        run: |
-         sudo apt install -y jq
+      #- name: Install jq
+      #  run: |
+      #   sudo apt install -y jq
 
       #- name: Run clang-tidy
       #  run: |
       #    clang-tidy main.cpp -- -std=c++17
-
-      - name: Send success message to Slack
-        if: success()
-        run: |
-          curl -X POST -H 'Content-type: application/json' \
-            --data '{"text":"✅ Clang-Tidy passed on main branch!"}' \
-            ${{ secrets.SLACK_WEBHOOK_URL }}
-      
-      - name: Notify Slack (Failure)
-        if: failure()
-        run: |
-          curl -X POST -H 'Content-type: application/json' \
-            --data '{"text":"❌ clang-tidy failed for `${{ github.repository }}`."}' \
-            ${{ secrets.SLACK_WEBHOOK_URL }}
-
 
       - name: Run clang-tidy and save output
         run: |
@@ -82,4 +67,21 @@ jobs:
               ]
             }
         env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}      
+
+      - name: Send success message to Slack
+        if: success()
+        run: |
+          curl -X POST -H 'Content-type: application/json' \
+            --data '{"text":"✅ Clang-Tidy passed on main branch!"}' \
+            ${{ secrets.SLACK_WEBHOOK_URL }}
+      
+      - name: Notify Slack (Failure)
+        if: failure()
+        run: |
+          curl -X POST -H 'Content-type: application/json' \
+            --data '{"text":"❌ clang-tidy failed for `${{ github.repository }}`."}' \
+            ${{ secrets.SLACK_WEBHOOK_URL }}
+
+
+      
