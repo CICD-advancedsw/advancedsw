@@ -1,0 +1,33 @@
+name: Clang-Tidy to Slack
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+
+jobs:
+  clang-tidy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Install clang-tidy
+        run: |
+          sudo apt update
+          sudo apt install clang-tidy -y
+
+      - name: Run clang-tidy and save output
+        run: |
+          clang-tidy test.cpp -- -std=c++17 > clang-tidy-report.txt 2>&1 || true
+
+      - name: Send clang-tidy result to Slack
+        if: always()
+        run: |
+          SUMMARY=$(head -n 10 clang-tidy-report.txt | sed 's/"/\\"/g' | awk '{ printf "%s\\n", $0 }')
+          PAYLOAD="{\"text\":\"🚨 *Clang-Tidy Issues Found:*\n\`\`\`\n${SUMMARY}\n\`\`\`\"}"
+          echo "$PAYLOAD"
+          curl -X POST -H 'Content-type: application/json' \
+            --data "$PAYLOAD" \
+            ${{ secrets.SLACK_WEBHOOK_URL }}
