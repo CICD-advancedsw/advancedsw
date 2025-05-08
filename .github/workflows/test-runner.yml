@@ -1,0 +1,12 @@
+name: Test EC2 Runner
+
+on:
+  push:
+    branches: [ main ]  # main 브랜치에 푸시할 때 실행됨
+
+jobs:
+  test-ec2-runner:
+    runs-on: self-hosted  # EC2에서 실행되도록 지정
+    steps:
+      - name: 테스트 메시지 출력
+        run: echo "EC2 Runner 연결 성공!"
