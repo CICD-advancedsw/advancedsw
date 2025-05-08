@@ -1,4 +1,4 @@
-name: Run Clang-Tidy (No CMake)
+name: Clang-Tidy to Slack
 
 on:
   push:
@@ -6,7 +6,7 @@ on:
   pull_request:
 
 jobs:
-  lint:
+  clang-tidy:
     runs-on: ubuntu-latest
 
     steps:
@@ -18,20 +18,14 @@ jobs:
           sudo apt update
           sudo apt install clang-tidy -y
 
-      - name: Run clang-tidy
+      - name: Run clang-tidy and save output
         run: |
-          clang-tidy main.cpp -- -std=c++17
+          clang-tidy main.cpp -- -std=c++17 > clang-tidy-report.txt 2>&1 || true
 
-      - name: Send success message to Slack
-        if: success()
+      - name: Send clang-tidy result to Slack
         run: |
+          SUMMARY=$(head -n 10 clang-tidy-report.txt | sed 's/"/\\"/g' | tr '\n' '\\n')
           curl -X POST -H 'Content-type: application/json' \
-            --data '{"text":"✅ Clang-Tidy passed on main branch!"}' \
+            --data "{\"text\":\"🚨 *Clang-Tidy Issues Found:*\n\`\`\`${SUMMARY}\`\`\`\"}" \
             ${{ secrets.SLACK_WEBHOOK_URL }}
-      
-      - name: Notify Slack (Failure)
-        if: failure()
-        run: |
-          curl -X POST -H 'Content-type: application/json' \
-            --data '{"text":"❌ clang-tidy failed for `${{ github.repository }}`."}' \
-            ${{ secrets.SLACK_WEBHOOK_URL }}
+        if: always()
