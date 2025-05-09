@@ -4,14 +4,16 @@
 #include <map>
 #include "../domain/location.h"
 #include "../domain/item.h"
+#include "../application/dvm.h"
 
 class Controller {
 private:
     Location location;
     std::map<Item, int> stocks;
+    DVM* dvm;
 
 public:
-    Controller();
+    Controller(DVM* dvm);
     ~Controller();
     void run();
 };

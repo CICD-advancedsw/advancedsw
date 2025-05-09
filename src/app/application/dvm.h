@@ -6,9 +6,9 @@
 #include <list>
 #include "../domain/location.h"
 #include "../domain/item.h"
+#include "otherdvm.h"
 
 class Sale;
-class OtherDVM;
 
 class DVM {
 private:
@@ -20,6 +20,8 @@ private:
     std::list<OtherDVM> dvms;
 
 public:
+    DVM(int id, Location loc, std::list<OtherDVM> otherDvms); // 생성자를 통한 의존성 주입
+    
     // 자판기의 아이템 목록을 조회
     std::string queryItems();
     
@@ -37,6 +39,9 @@ public:
     
     // 선결제된 아이템 처리
     std::string processPrepaidItem(std::string certCode);
+    
+    // 다른 DVM 추가 메서드
+    void addOtherDVM(OtherDVM dvm);
 };
 
 #endif // DVM_H

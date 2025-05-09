@@ -10,6 +10,7 @@ private:
     Location location;
 
 public:
+    OtherDVM(int id, Location loc);
     bool findAvailableStocks();
     bool askForPrepayment();
     Location getLocation();
