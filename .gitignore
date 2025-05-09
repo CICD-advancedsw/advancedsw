@@ -1,1 +1,9 @@
 .vs/
+.vscode/
+*.exe
+*.out
+*.o
+*.a
+*.so
+*.dylib
+*.lib
