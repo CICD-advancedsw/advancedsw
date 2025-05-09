@@ -26,7 +26,7 @@ public:
     std::string queryItems();
     
     // 특정 아이템의 재고를 조회
-    std::string queryStocks(std::string itemCode);
+    std::string queryStocks(std::string itemCode, int count);
     
     // 주문 요청
     void requestOrder();
