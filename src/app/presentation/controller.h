@@ -16,6 +16,9 @@ public:
     Controller(DVM* dvm);
     ~Controller();
     void run();
+    int displayMenu();
+    void handleMenuSelection(int choice);
+    void handleBeverageSelection();
+    void handlePrepaidPurchase();
 };
-
 #endif
