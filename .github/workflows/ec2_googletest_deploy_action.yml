@@ -21,16 +21,23 @@ jobs:
           make
           ./runTests
 
+      - name: Deploy binary
+        if: success()
+        run: |
+          mkdir -p /home/ec2-user/deployed
+          cp ~/advancedsw/build/runTests /home/ec2-user/deployed/
+          chmod +x /home/ec2-user/deployed/runTests
+
       - name: Notify Slack on success
         if: success()
         run: |
           curl -X POST -H 'Content-type: application/json' \
-          --data '{"text":"✅ Googletest 실행 성공!"}' \
+          --data '{"text":"✅ Googletest 실행 성공 및 실행파일 배포 완료!"}' \
           ${{ secrets.SLACK_WEBHOOK_URL }}
 
       - name: Notify Slack on failure
         if: failure()
         run: |
           curl -X POST -H 'Content-type: application/json' \
-          --data '{"text":"❌ Googletest 실행 실패!"}' \
+          --data '{"text":"❌ Googletest 실패: 빌드 또는 테스트 중 오류 발생"}' \
           ${{ secrets.SLACK_WEBHOOK_URL }}
