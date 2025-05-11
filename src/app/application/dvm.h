@@ -4,6 +4,7 @@
 #include <string>
 #include <map>
 #include <list>
+#include "sale.h"
 #include "../domain/location.h"
 #include "../domain/item.h"
 #include "otherdvm.h"
@@ -18,8 +19,13 @@ private:
     std::list<Item> items;
     std::list<Sale> sales;
     std::list<OtherDVM> dvms;
-
+    // question: 내부에서만 사용되는 메서드 추가 제안
+    void initializeItems();
+    void initializeStocks();
+    Item findItemByCode(const std::string& itemCode);
 public:
+    // 개발을 위한 기본 생성자 임시 추가
+    DVM(); 
     DVM(int id, Location loc, std::list<OtherDVM> otherDvms); // 생성자를 통한 의존성 주입
     
     // 자판기의 아이템 목록을 조회
