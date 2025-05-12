@@ -6,7 +6,7 @@
 #include <list>
 #include "../domain/location.h"
 #include "../domain/item.h"
-#include "../domain/sale.h"
+#include "sale.h"
 #include "../dto/salerequest.h"
 #include "../exception/dvmexception.h"
 #include "otherdvm.h"
