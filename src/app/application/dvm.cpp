@@ -1,7 +1,5 @@
 #include "dvm.h"
-#include "../dto/salerequest.h" // SaleRequest 헤더 추가
-#include "sale.h" // Sale 클래스 헤더 추가
-#include "dvmexception.h" // DVMNotFoundException 헤더 추가
+
 #include <iostream>
 #include <sstream>
 using namespace std; // std namespace 사용 선언
