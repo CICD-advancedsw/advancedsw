@@ -4,7 +4,7 @@
 
 CertificationCode::CertificationCode()
 {
-    // 랜덤 10자리 인증코드 생성
+    // 랜덤 5자리 인증코드 생성
     const std::string characters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
     const int codeLength = 5;
 
@@ -21,19 +21,15 @@ CertificationCode::CertificationCode()
     isUsed = false;
 }
 
-CertificationCode::CertificationCode(std::string value) : value(value), isUsed(false)
-{
-    // 외부에서 지정한 코드로 초기화 (특정 인증코드로 초기화)
-}
+// 외부에서 지정한 코드로 초기화 (특정 인증코드로 초기화)
+CertificationCode::CertificationCode(std::string value) 
+: value(value), isUsed(false) {}
 
-bool CertificationCode::markUsed()
+bool CertificationCode::markUsed(const std::string& certCode)
 {
-    if (isUsed)
-        return false;
+    if (isUsed) return false;
+    if(certCode != value) return false;
+
     isUsed = true;
     return true;
-}
-
-bool CertificationCode::matches(const std::string& inputCode) const {
-    return value == inputCode && !isUsed;
 }
