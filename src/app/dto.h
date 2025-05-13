@@ -1,4 +1,5 @@
 #include <string>
+#include "domain/item.h"
 
 using namespace std;
 
@@ -8,6 +9,7 @@ using namespace std;
 struct SaleRequest {
     string itemCode;
     int itemNum;
+    Item item;  // 판매할 아이템 정보
 };
 
 struct CheckStockRequest {

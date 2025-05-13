@@ -23,6 +23,9 @@ private:
     list<Sale> sales;
     list<OtherDVM> dvms;
 
+    // 아이템 코드로 재고에서 아이템을 찾는 메서드
+    Item findItem(const string& itemCode) const;
+
 public:
     DVM(int id, Location loc, list<OtherDVM> otherDvMs, list<Item> itemList, map<Item, int> stockList, list<Sale> saleList); // 생성자를 통한 의존성 주입    
     // 자판기의 아이템 목록을 조회
@@ -32,10 +35,10 @@ public:
     string queryStocks(string itemCode, int count);
     
     // 주문 요청
-    void requestOrder(SaleRequest request); // SaleRequest를 파라미터로 받는 메서드로 수정
+    void requestOrder(SaleRequest request);
     
     // 특정 자판기에 주문 요청
-    pair<Location, string> requestOrder(int targetDvmId, SaleRequest request); // SaleRequest를 파라미터로 받는 메서드로 수정
+    pair<Location, string> requestOrder(int targetDvmId, SaleRequest request);
     
     // 다른 자판기로부터의 판매 정보 저장
     void saveSaleFromOther(string itemCode, int itemNum, string certCode);

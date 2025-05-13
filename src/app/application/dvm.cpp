@@ -7,6 +7,15 @@ using namespace std; // std namespace 사용 선언
 DVM::DVM(int id, Location loc, list<OtherDVM> otherDvms, list<Item> itemList, map<Item, int> stockList, list<Sale> saleList)
     : dvmId(id), location(loc), dvms(otherDvms), items(itemList), stocks(stockList), sales(saleList) { }
 
+// Private methods
+Item DVM::findItem(const string& itemCode) const {
+    auto it = stocks.find(Item(itemCode, "", 0));
+    if (it == stocks.end()) {
+        throw runtime_error("Item not found");
+    }
+    return it->first;
+}
+
 string DVM::queryItems() {
     ostringstream oss;
     for (const auto& item : items) {
@@ -17,17 +26,16 @@ string DVM::queryItems() {
 
 string DVM::queryStocks(string itemCode, int count) {
     ostringstream oss;
-    auto it = stocks.find(Item(itemCode, "", 0));
-    
-    if (it != stocks.end()) {
-        int totalPrice = it->first.calculatePrice(count);
+    try {
+        Item item = findItem(itemCode);
+        int totalPrice = item.calculatePrice(count);
         // flag:this;item_code:xxx;total_price:xxx;item_name:xxx;count:xxx 형식으로 반환
         oss << "flag:this;"
             << "item_code:" << itemCode << ";"
             << "total_price:" << totalPrice << ";"
-            << "item_name:" << it->first.printItem() << ";"
+            << "item_name:" << item.printItem() << ";"
             << "count:" << count;
-    } else {
+    } catch (const runtime_error&) {
         OtherDVM* nearestDvm = nullptr;
         int shortestDistance = INT_MAX;
 
@@ -60,11 +68,15 @@ string DVM::queryStocks(string itemCode, int count) {
 }
 
 void DVM::requestOrder(SaleRequest request) {
+    Item item = findItem(request.itemCode);
+    request.item = item;
     Sale sale = Sale::createStandaloneSale(request);
     sales.push_back(sale);
 }
 
 pair<Location, string> DVM::requestOrder(int targetDvmId, SaleRequest request) {
+    Item item = findItem(request.itemCode);
+    request.item = item;
     auto [sale, certcode] = Sale::createSaleForDvm(request, targetDvmId);
     sales.push_back(sale);
 
@@ -73,12 +85,18 @@ pair<Location, string> DVM::requestOrder(int targetDvmId, SaleRequest request) {
             return make_pair(dvm.getLocation(), certcode);
         }
     }
-
     throw DVMNotFoundException(targetDvmId);
 }
 
 void DVM::saveSaleFromOther(string itemCode, int itemNum, string certCode) {
-    Sale sale = Sale::createSaleUsingCertCode(SaleRequest{.itemCode = itemCode, .itemNum = itemNum}, certCode);
+    Item item = findItem(itemCode);
+    SaleRequest request{
+        .itemCode = itemCode,
+        .itemNum = itemNum,
+        .item = item
+    };
+    
+    Sale sale = Sale::createSaleUsingCertCode(request, certCode);
     sales.push_back(sale);
 }
 
