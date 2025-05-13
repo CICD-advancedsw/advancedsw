@@ -4,6 +4,8 @@
 #include <string>
 #include "../domain/location.h"
 
+using namespace std;
+
 class OtherDVM {
 private:
     int dvmId;

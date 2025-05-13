@@ -2,6 +2,7 @@
 #define ITEM_H
 
 #include <string>
+#include <iostream>
 
 class Item {
 private:

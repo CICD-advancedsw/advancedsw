@@ -7,47 +7,44 @@
 #include "sale.h"
 #include "../domain/location.h"
 #include "../domain/item.h"
+#include "sale.h"
+#include "../dto/salerequest.h"
+#include "../exception/dvmexception.h"
 #include "otherdvm.h"
 
+using namespace std; // std namespace 사용 선언
+
 class Sale;
+class SaleRequest; // SaleRequest 클래스 전방 선언
 
 class DVM {
 private:
     int dvmId;
     Location location;
-    std::map<Item, int> stocks;
-    std::list<Item> items;
-    std::list<Sale> sales;
-    std::list<OtherDVM> dvms;
-    // question: 내부에서만 사용되는 메서드 추가 제안
-    void initializeItems();
-    void initializeStocks();
-    Item findItemByCode(const std::string& itemCode);
+    map<Item, int> stocks;
+    list<Item> items;
+    list<Sale> sales;
+    list<OtherDVM> dvms;
+
 public:
-    // 개발을 위한 기본 생성자 임시 추가
-    DVM(); 
-    DVM(int id, Location loc, std::list<OtherDVM> otherDvms); // 생성자를 통한 의존성 주입
-    
+    DVM(int id, Location loc, list<OtherDVM> otherDvMs, list<Item> itemList, map<Item, int> stockList, list<Sale> saleList); // 생성자를 통한 의존성 주입    
     // 자판기의 아이템 목록을 조회
-    std::string queryItems();
+    string queryItems();
     
     // 특정 아이템의 재고를 조회
-    std::string queryStocks(std::string itemCode, int count);
+    string queryStocks(string itemCode, int count);
     
     // 주문 요청
-    void requestOrder();
+    void requestOrder(SaleRequest request); // SaleRequest를 파라미터로 받는 메서드로 수정
     
     // 특정 자판기에 주문 요청
-    std::string requestOrder(int targetDvmId);
+    pair<Location, string> requestOrder(int targetDvmId, SaleRequest request); // SaleRequest를 파라미터로 받는 메서드로 수정
     
     // 다른 자판기로부터의 판매 정보 저장
-    void saveSaleFromOther(std::string itemCode, int itemNum, std::string certCode);
+    void saveSaleFromOther(string itemCode, int itemNum, string certCode);
     
     // 선결제된 아이템 처리
-    std::string processPrepaidItem(std::string certCode);
-    
-    // 다른 DVM 추가 메서드
-    void addOtherDVM(OtherDVM dvm);
+    bool processPrepaidItem(string certCode);
 };
 
 #endif // DVM_H

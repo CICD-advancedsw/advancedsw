@@ -1,10 +1,14 @@
 #include "sale.h"
-#include <chrono>
+
+#include "../dto/salerequest.h"
 #include <ctime>
+  
+  #include <chrono>
+
 #include <sstream>
 #include <stdexcept>
-
-// Helper 함수: 현재 시간을 문자열로 반환 (예: "2024-05-01 14:03:22")
+#include <chrono>
+  
 static std::string getCurrentTimeAsString() {
     auto now = std::chrono::system_clock::now();
     std::time_t timeNow = std::chrono::system_clock::to_time_t(now);
@@ -15,50 +19,47 @@ static std::string getCurrentTimeAsString() {
     return std::string(buffer);
 }
 
-// 일반 판매 요청 - 생성자
-Sale::Sale(SaleRequest request)
-    : item(request.item),
-      count(request.count),
-      totalAmount(request.totalAmount),
-      prepayment(nullptr) {
-
-    saleId = getCurrentTimeAsString();
-    datetime = getCurrentTimeAsString();
-
-    // 외부 결제 서버에 승인 요청
+// Private constructors
+Sale::Sale(SaleRequest request) 
+    : saleId(""), datetime(""), item(Item(request.itemCode, "", 0)), 
+    count(request.itemNum), totalAmount(0), 
+    card(Card(request.card)), prepayment(nullptr) {
+    time_t now = time(0);
+    datetime = ctime(&now);
+    saleId = "SALE_" + std::to_string(now);
 }
 
-// 특정 DVM으로 향하는 선결제 요청 처리
-Sale::Sale(SaleRequest request, int targetDvmId)
-    : item(request.item),
-      count(request.count),
-      totalAmount(request.totalAmount) {
-    
-    saleId = getCurrentTimeAsString();
-    datetime = getCurrentTimeAsString();
-
-    // 외부 결제 서버
-
+Sale::Sale(SaleRequest request, int targetDvmId) 
+    : Sale(request) {
     prepayment = new Prepayment(targetDvmId);
 }
 
-// 인증코드를 사용한 음료 수령 요청 처리
-Sale::Sale(SaleRequest request, const std::string& certCode)
-    : item(request.item),
-      count(request.count),
-      totalAmount(request.totalAmount) {
-
-    saleId = getCurrentTimeAsString();
-    datetime = getCurrentTimeAsString();
-
-    prepayment = new Prepayment(request.dvmId, CertificationCode(certCode));
+Sale::Sale(SaleRequest request, std::string certCode) 
+    : Sale(request) {
+    prepayment = new Prepayment(0, certCode);
 }
 
+// Factory methods
+Sale Sale::createStandaloneSale(SaleRequest request) {
+    return Sale(request);
+}
 
-// 수령 처리 메서드
-bool Sale::receivePrepaidItem(const std::string& certCode) {
-    if (!prepayment) return false;
-    return prepayment->isCertificationCode(certCode);
+std::pair<Sale, std::string> Sale::createSaleForDvm(SaleRequest request, int targetDvmId) {
+    Sale sale(request, targetDvmId);
+    // Prepayment에도 FACTORY 패턴 필요할 거 같은데 이야기해보기
+    return std::make_pair(sale, sale.prepayment->isCertificationCode() ? "CERT_CODE" : "");
+}
+
+Sale Sale::createSaleUsingCertCode(SaleRequest request, std::string certCode) {
+    return Sale(request, certCode);
+}
+
+// Public methods
+bool Sale::receivePrepaidItem(std::string certCode) {
+    if (prepayment && prepayment->isCertificationCode()) {
+        return true;
+    }
+    return false;
 }
 
 // 소멸자

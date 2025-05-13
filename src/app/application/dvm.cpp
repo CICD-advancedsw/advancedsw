@@ -1,100 +1,80 @@
-﻿#include "dvm.h"
+#include "dvm.h"
+
 #include <iostream>
-#include <vector>
+#include <sstream>
+using namespace std; // std namespace 사용 선언
 
-using namespace std;
+DVM::DVM(int id, Location loc, list<OtherDVM> otherDvms, list<Item> itemList, map<Item, int> stockList, list<Sale> saleList)
+    : dvmId(id), location(loc), dvms(otherDvms), items(itemList), stocks(stockList), sales(saleList) { }
 
-DVM::DVM() : dvmId(0), location(Location()), stocks(), items(), sales(), dvms()
-{
-  initializeItems();
-  initializeStocks();
-}
-
-DVM::DVM(int id, Location loc, std::list<OtherDVM> otherDvms) : dvmId(id), location(loc), dvms(otherDvms)
-{
-  initializeItems();
-  initializeStocks();
-}
-
-void DVM::initializeItems()
-{
-  std::vector<std::pair<std::string, std::string>> itemData = {
-      {"01", "콜라"}, {"02", "사이다"}, {"03", "녹차"}, {"04", "홍차"}, {"05", "밀크티"}, {"06", "탄산수"}, {"07", "보리차"}, {"08", "캔커피"}, {"09", "물"}, {"10", "에너지드링크"}, {"11", "유자차"}, {"12", "식혜"}, {"13", "아이스티"}, {"14", "딸기주스"}, {"15", "오렌지주스"}, {"16", "포도주스"}, {"17", "이온음료"}, {"18", "아메리카노"}, {"19", "핫초코"}, {"20", "카페라떼"}};
-
-  for (const auto &data : itemData)
-  {
-    items.push_back(Item(data.first, data.second, 1000));
-  }
-}
-
-void DVM::initializeStocks()
-{
-  for (const auto &item : items)
-  {
-    stocks[item] = 10; // 기본 재고 10개
-  }
-}
-
-string DVM::queryItems()
-{
-  string result;
-  int count = 0;
-
-  for (const auto &item : items)
-  {
-    result += item.printItem();
-    count++;
-    if (count % 4 == 0)
-    {
-      result += "\n";
+string DVM::queryItems() {
+    ostringstream oss;
+    for (const auto& item : items) {
+        oss << item << "\n"; 
     }
-    else
-    {
-      result += "\t";
+    return oss.str();
+}
+
+string DVM::queryStocks(string itemCode, int count) {
+    ostringstream oss;
+    auto it = stocks.find(Item(itemCode, "", 0)); // 빈 이름과 가격 0으로 Item 생성
+    if (it != stocks.end()) {
+        int totalPrice = it->first.calculatePrice(count);
+        oss << "음료 가격 총 " << totalPrice << "원 (" << it->first << "* " << count << ")";
+    } else {
+        oss << "현재 해당 자판기에서 구매가 불가합니다.\n";
+
+        OtherDVM* nearestDvm = nullptr;
+        int shortestDistance = INT_MAX;
+
+        for (auto& dvm : dvms) {
+            if (dvm.findAvailableStocks(itemCode, count)) {
+                int distance = location.calculateDistance(dvm.getLocation());
+                if (distance < shortestDistance) {
+                    shortestDistance = distance;
+                    nearestDvm = &dvm;
+                }
+            }
+        }
+        if (nearestDvm) {
+            int x = nearestDvm->getLocation().getX();
+            int y = nearestDvm->getLocation().getY();
+            oss << "(" << x << "," << y << ") 위치의 자판기에서 구매가 가능합니다.\n";
+        } else {
+            oss << "해당 음료를 제공할 수 있는 자판기가 없습니다.\n";
+        }
     }
-  }
-
-  return result;
+    return oss.str();
 }
 
-Item DVM::findItemByCode(const std::string &itemCode)
-{
-  for (const auto &item : items)
-  {
+void DVM::requestOrder(SaleRequest request) {
+    Sale sale = Sale::createStandaloneSale(request);
+    sales.push_back(sale);
+}
 
-    if (item.printItem().find(itemCode) != std::string::npos)
-    {
-      return item;
+pair<Location, string> DVM::requestOrder(int targetDvmId, SaleRequest request) {
+    auto [sale, certcode] = Sale::createSaleForDvm(request, targetDvmId);
+    sales.push_back(sale);
+
+    for (const auto& dvm : dvms) {
+        if (dvm.getId() == targetDvmId) {
+            return make_pair(dvm.getLocation(), certcode);
+        }
     }
-  }
-  throw std::invalid_argument("Invalid item code");
+
+    throw DVMNotFoundException(targetDvmId);
 }
 
-string DVM::queryStocks(const std::string itemCode, int count)
-{
-  try
-  {
-    Item item = findItemByCode(itemCode);
-    if (stocks[item] < count)
-    {
-      return "재고 없음";
+void DVM::saveSaleFromOther(string itemCode, int itemNum, string certCode) {
+    Sale sale = Sale::createSaleUsingCertCode(SaleRequest{.itemCode = itemCode, .itemNum = itemNum, .card = ""}, certCode);
+    sales.push_back(sale);
+}
+
+bool DVM::processPrepaidItem(string certCode) {
+    for (auto& sale : sales) {
+        if (sale.receivePrepaidItem(certCode)) {
+            return true;
+        }
     }
-    int price = item.calculatePrice(count);
-    return "음료 가격 총 " + to_string(price) + "원 (" + itemCode + " 1개 " + to_string(item.calculatePrice(1)) + "원 * " + to_string(count) + ")";
-  }
-  catch (const std::invalid_argument &e)
-  {
-    return "Invalid error";
-  }
-}
-
-void DVM::requestOrder()
-{
-  // todo: 주문 요청 처리 및 카드결제 로직 추가
-}
-
-string DVM::processPrepaidItem(const std::string certCode)
-{
-  // todo: 선결제 아이템 처리 로직 추가
-  return "";
+    return false;
 }
