@@ -10,11 +10,11 @@ private:
     Location location;
 
 public:
-    OtherDVM(int id, Location loc);
-    bool findAvailableStocks();
+    OtherDVM(int id, const Location& loc);
+    bool findAvailableStocks(const std::string& itemCode);
     bool askForPrepayment();
-    Location getLocation();
-    int getDvmId();
+    const Location& getLocation() const;
+    int getDvmId() const;
 };
 
 #endif // OTHERDVM_H
