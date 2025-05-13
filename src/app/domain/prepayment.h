@@ -12,7 +12,7 @@ private:
 public:
     Prepayment(int dvmId);
     Prepayment(int dvmId, CertificationCode certCode);
-    bool isCertificationCode(std::string inputCode);
+    bool isCertificationCode(const std::string& inputCertCode);
 };
 
 #endif // PREPAYMENT_H

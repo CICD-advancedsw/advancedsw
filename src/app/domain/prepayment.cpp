@@ -10,6 +10,6 @@ Prepayment::Prepayment(int dvmId, CertificationCode certCode)
     : dvmId(dvmId), certCode(certCode) {}
 
 // 인증코드 일치 여부 + 사용되지 않았는지 확인
-bool Prepayment::isCertificationCode(std::string inputCode) {
-    return certCode.matches(inputCode);
+bool Prepayment::isCertificationCode(const std::string& inputCertCode) {
+    return certCode.markUsed(inputCertCode);
 }
