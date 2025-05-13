@@ -8,14 +8,11 @@
 #include "../domain/location.h"
 #include "../domain/item.h"
 #include "sale.h"
-#include "../dto/salerequest.h"
+#include "../dto.h"
 #include "../exception/dvmexception.h"
 #include "otherdvm.h"
 
 using namespace std; // std namespace 사용 선언
-
-class Sale;
-class SaleRequest; // SaleRequest 클래스 전방 선언
 
 class DVM {
 private:
