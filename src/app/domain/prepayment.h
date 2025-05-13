@@ -7,12 +7,13 @@
 class Prepayment {
 private:
     int dvmId;
-    std::string certCode;
+    CertificationCode certCode;
+    int name;
 
 public:
     Prepayment(int dvmId);
-    Prepayment(int dvmId, std::string certCode);
-    bool isCertificationCode();
+    Prepayment(int dvmId, CertificationCode certCode);
+    bool isCertificationCode(std::string inputCode);
 };
 
 #endif // PREPAYMENT_H
