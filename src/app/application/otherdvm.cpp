@@ -14,8 +14,12 @@ CheckStockResponse OtherDVM::findAvailableStocks(const CheckStockRequest& reques
     };
 }
 
-bool OtherDVM::askForPrepayment() {
-    return true; // 임시
+askPrepaymentResponse OtherDVM::askForPrepayment(const askPrepaymentRequest& request) {
+    return askPrepaymentResponse{
+        .item_code = request.item_code,
+        .item_num = request.item_num,
+        .availability = true
+    };
 }
 
 const Location& OtherDVM::getLocation() const {

@@ -24,4 +24,16 @@ struct CheckStockResponse {
     int coor_y;
 };
 
+struct askPrepaymentRequest {
+    string item_code;
+    int item_num;
+    string cert_code;
+};
+
+struct askPrepaymentResponse {
+    string item_code;
+    int item_num;
+    bool availability;
+};
+
 #endif 

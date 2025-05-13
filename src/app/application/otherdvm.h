@@ -15,7 +15,7 @@ private:
 public:
     OtherDVM(int id, const Location& loc);
     CheckStockResponse findAvailableStocks(const CheckStockRequest& request);
-    bool askForPrepayment();
+    askPrepaymentResponse askForPrepayment(const askPrepaymentRequest& request);
     const Location& getLocation() const;
     int getDvmId() const;
 };
