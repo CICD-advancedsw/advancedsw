@@ -11,15 +11,13 @@ private:
     int price;
 
 public:
-    Item(const std::string& code, const std::string& name, int price)
-        : itemCode(code), name(name), price(price) {}
+    Item(std::string itemCode, std::string name, int price);
+    std::string printItem() const;
+    int calculatePrice(int num);
 
-    void printItem();
-    int calculatePrice(int num) const;
-
-    friend std::ostream& operator<<(std::ostream& os, const Item& item) {
-        os << "ItemCode: " << item.itemCode << ", Name: " << item.name << ", Price: " << item.price;
-        return os;
+    // Overload the < operator for comparison => list 사용을 위한 함수 정의라 설계에 안 넣어도 되지 않나
+    bool operator<(const Item& other) const {
+        return itemCode < other.itemCode; // Compare based on id
     }
 };
 

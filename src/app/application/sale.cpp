@@ -1,6 +1,23 @@
 #include "sale.h"
+
 #include "../dto/salerequest.h"
 #include <ctime>
+  
+  #include <chrono>
+
+#include <sstream>
+#include <stdexcept>
+#include <chrono>
+  
+static std::string getCurrentTimeAsString() {
+    auto now = std::chrono::system_clock::now();
+    std::time_t timeNow = std::chrono::system_clock::to_time_t(now);
+    std::tm localTm;
+    localtime_r(&timeNow, &localTm);
+    char buffer[20];
+    std::strftime(buffer, sizeof(buffer), "%Y-%m-%d %H:%M:%S", &localTm);
+    return std::string(buffer);
+}
 
 // Private constructors
 Sale::Sale(SaleRequest request) 
@@ -45,4 +62,10 @@ bool Sale::receivePrepaidItem(std::string certCode) {
     return false;
 }
 
-
+// 소멸자
+Sale::~Sale() {
+    if (prepayment != nullptr) {
+        delete prepayment;
+        prepayment = nullptr;
+    }
+}

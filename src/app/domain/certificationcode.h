@@ -11,7 +11,7 @@ private:
 public:
     CertificationCode();
     CertificationCode(std::string value);
-    bool markUsed();
+    bool markUsed(const std::string& certCode);
 };
 
 #endif // CERTIFICATIONCODE_H

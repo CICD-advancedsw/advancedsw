@@ -12,14 +12,11 @@ private:
     Location location;
 
 public:
-    OtherDVM(int id, Location loc);
-    bool findAvailableStocks(string itemCode, int itemNum);
+    OtherDVM(int id, const Location& loc);
+    bool findAvailableStocks(const std::string& itemCode);
     bool askForPrepayment();
-    Location getLocation();
-    int getDvmId(); // DVM ID를 반환하는 메서드
-
-    // getId 메서드 추가
-    int getId() const { return dvmId; }
+    const Location& getLocation() const;
+    int getDvmId() const;
 };
 
 #endif // OTHERDVM_H

@@ -78,4 +78,3 @@ bool DVM::processPrepaidItem(string certCode) {
     }
     return false;
 }
-
