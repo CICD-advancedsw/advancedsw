@@ -25,6 +25,9 @@ private:
 
     // 아이템 코드로 재고에서 아이템을 찾는 메서드
     Item findItem(const string& itemCode) const;
+    
+    // 재고를 감소시키는 메서드
+    void decreaseStock(const string& itemCode, int count);
 
 public:
     DVM(int id, Location loc, list<OtherDVM> otherDvMs, list<Item> itemList, map<Item, int> stockList, list<Sale> saleList); // 생성자를 통한 의존성 주입    

@@ -8,6 +8,14 @@ DVM::DVM(int id, Location loc, list<OtherDVM> otherDvms, list<Item> itemList, ma
     : dvmId(id), location(loc), dvms(otherDvms), items(itemList), stocks(stockList), sales(saleList) { }
 
 // Private methods
+void DVM::decreaseStock(const string& itemCode, int count) {
+    auto it = stocks.find(Item(itemCode, "", 0));
+    if (it == stocks.end() || it->second < count) {
+        throw runtime_error("Insufficient stock");
+    }
+    stocks[it->first] -= count;
+}
+
 Item DVM::findItem(const string& itemCode) const {
     auto it = stocks.find(Item(itemCode, "", 0));
     if (it == stocks.end()) {
@@ -70,6 +78,7 @@ string DVM::queryStocks(string itemCode, int count) {
 void DVM::requestOrder(SaleRequest request) {
     Item item = findItem(request.itemCode);
     request.item = item;
+    decreaseStock(request.itemCode, request.itemNum);
     Sale sale = Sale::createStandaloneSale(request);
     sales.push_back(sale);
 }
@@ -77,6 +86,7 @@ void DVM::requestOrder(SaleRequest request) {
 pair<Location, string> DVM::requestOrder(int targetDvmId, SaleRequest request) {
     Item item = findItem(request.itemCode);
     request.item = item;
+    decreaseStock(request.itemCode, request.itemNum);
     auto [sale, certcode] = Sale::createSaleForDvm(request, targetDvmId);
     sales.push_back(sale);
 
@@ -90,6 +100,7 @@ pair<Location, string> DVM::requestOrder(int targetDvmId, SaleRequest request) {
 
 void DVM::saveSaleFromOther(string itemCode, int itemNum, string certCode) {
     Item item = findItem(itemCode);
+    decreaseStock(itemCode, itemNum);
     SaleRequest request{
         .itemCode = itemCode,
         .itemNum = itemNum,
