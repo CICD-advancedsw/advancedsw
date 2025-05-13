@@ -90,8 +90,18 @@ pair<Location, string> DVM::requestOrder(int targetDvmId, SaleRequest request) {
     auto [sale, certcode] = Sale::createSaleForDvm(request, targetDvmId);
     sales.push_back(sale);
 
-    for (const auto& dvm : dvms) {
+    for (auto& dvm : dvms) {
         if (dvm.getDvmId() == targetDvmId) {
+            // 선결제 처리 요청
+            askPrepaymentRequest askRequest{
+                .item_code = request.itemCode,
+                .item_num = request.itemNum,
+                .cert_code = certcode
+            };
+            askPrepaymentResponse response = dvm.askForPrepayment(askRequest);
+            if (!response.availability) {
+                throw runtime_error("Prepayment not available");
+            }
             return make_pair(dvm.getLocation(), certcode);
         }
     }
