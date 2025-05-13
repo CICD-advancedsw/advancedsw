@@ -8,7 +8,6 @@ using namespace std;
 struct SaleRequest {
     string itemCode;
     int itemNum;
-    string card;
 };
 
 struct CheckStockRequest {
