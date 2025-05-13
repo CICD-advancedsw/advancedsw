@@ -8,7 +8,6 @@ class Prepayment {
 private:
     int dvmId;
     CertificationCode certCode;
-    int name;
 
 public:
     Prepayment(int dvmId);

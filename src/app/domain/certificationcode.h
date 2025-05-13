@@ -12,6 +12,7 @@ public:
     CertificationCode();
     CertificationCode(std::string value);
     bool markUsed();
+    bool matches(const std::string& inputCode) const;
 };
 
 #endif // CERTIFICATIONCODE_H
