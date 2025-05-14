@@ -1,32 +1,21 @@
 #include "sale.h"
 
-#include "../dto/salerequest.h"
-#include <ctime>
-  
-  #include <chrono>
-
+#include <ctime>  
+#include <chrono>
 #include <sstream>
 #include <stdexcept>
 #include <chrono>
-  
-static std::string getCurrentTimeAsString() {
-    auto now = std::chrono::system_clock::now();
-    std::time_t timeNow = std::chrono::system_clock::to_time_t(now);
-    std::tm localTm;
-    localtime_r(&timeNow, &localTm);
-    char buffer[20];
-    std::strftime(buffer, sizeof(buffer), "%Y-%m-%d %H:%M:%S", &localTm);
-    return std::string(buffer);
-}
 
+using namespace std;
+  
 // Private constructors
 Sale::Sale(SaleRequest request) 
-    : saleId(""), datetime(""), item(Item(request.itemCode, "", 0)), 
-    count(request.itemNum), totalAmount(0), 
-    card(Card(request.card)), prepayment(nullptr) {
+    : saleId(""), datetime(""), item(request.item), 
+    count(request.itemNum), totalAmount(0), prepayment(nullptr) {
     time_t now = time(0);
     datetime = ctime(&now);
-    saleId = "SALE_" + std::to_string(now);
+    saleId = "SALE_" + to_string(now);
+    totalAmount = item.calculatePrice(count);
 }
 
 Sale::Sale(SaleRequest request, int targetDvmId) 
@@ -34,7 +23,7 @@ Sale::Sale(SaleRequest request, int targetDvmId)
     prepayment = new Prepayment(targetDvmId);
 }
 
-Sale::Sale(SaleRequest request, std::string certCode) 
+Sale::Sale(SaleRequest request, const string& certCode) 
     : Sale(request) {
     prepayment = new Prepayment(0, certCode);
 }
@@ -44,19 +33,19 @@ Sale Sale::createStandaloneSale(SaleRequest request) {
     return Sale(request);
 }
 
-std::pair<Sale, std::string> Sale::createSaleForDvm(SaleRequest request, int targetDvmId) {
+// 여기 손봐야함
+pair<Sale, string> Sale::createSaleForDvm(SaleRequest request, int targetDvmId) {
     Sale sale(request, targetDvmId);
-    // Prepayment에도 FACTORY 패턴 필요할 거 같은데 이야기해보기
-    return std::make_pair(sale, sale.prepayment->isCertificationCode() ? "CERT_CODE" : "");
+    return make_pair(sale, sale.prepayment->isCertificationCode() ? "CERT_CODE" : "");
 }
 
-Sale Sale::createSaleUsingCertCode(SaleRequest request, std::string certCode) {
+Sale Sale::createSaleUsingCertCode(SaleRequest request, string certCode) {
     return Sale(request, certCode);
 }
 
 // Public methods
-bool Sale::receivePrepaidItem(std::string certCode) {
-    if (prepayment && prepayment->isCertificationCode()) {
+bool Sale::receivePrepaidItem(const string& certCode) {
+    if (prepayment && prepayment->isCertificationCode(certCode)) {
         return true;
     }
     return false;
