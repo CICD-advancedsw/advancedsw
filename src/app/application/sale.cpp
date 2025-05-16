@@ -36,7 +36,9 @@ Sale Sale::createStandaloneSale(SaleRequest request) {
 pair<Sale, string> Sale::createSaleForDvm(SaleRequest request, int targetDvmId) {
     CertificationCode certCode;
     Sale sale(request, targetDvmId);
-    return make_pair(sale, certCode.toString());
+    stringstream ss;
+    ss << certCode;
+    return make_pair(sale, ss.str());
 }
 
 Sale Sale::createSaleUsingCertCode(SaleRequest request, string certCode) {
