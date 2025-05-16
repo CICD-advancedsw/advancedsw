@@ -87,7 +87,8 @@ void Controller::handleBeverageSelection()
         else
         {
             cout << msg << endl;
-            dvm->requestOrder();
+            SaleRequest request{menu, count, Item("", "", 0)};
+            dvm->requestOrder(request);
             cout << "\n결제가 완료되었습니다." << endl;
             cout << "\n메인 화면으로 돌아갑니다." << endl;
             cout << "계속하려면 Enter를 누르세요..." << endl;
@@ -124,17 +125,18 @@ void Controller::handlePrepaidPurchase()
             continue;
         }
 
-        string result = dvm->processPrepaidItem(certCode);
-        if (result.empty())
-        {
-            cout << "인증코드를 잘못 입력하셨습니다. 다시 입력해주세요\n"
-                 << endl;
-        }
-        else
-        {
-            cout << result << endl;
-            break;
-        }
+        bool result = dvm->processPrepaidItem(certCode);
+        // todo: result에 따른 처리 로직
+        //  if (!result)
+        //  {
+        //      cout << "인증코드를 잘못 입력하셨습니다. 다시 입력해주세요\n"
+        //           << endl;
+        //  }
+        //  else
+        //  {
+        //      cout << result << endl;
+        //      break;
+        //  }
     }
 
     return;
