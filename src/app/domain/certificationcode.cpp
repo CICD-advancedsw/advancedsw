@@ -33,3 +33,8 @@ bool CertificationCode::markUsed(const std::string& certCode)
     isUsed = true;
     return true;
 }
+
+std::string CertificationCode::toString() const
+{
+    return value;
+}

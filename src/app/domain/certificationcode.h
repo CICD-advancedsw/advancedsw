@@ -12,6 +12,7 @@ public:
     CertificationCode();
     CertificationCode(std::string value);
     bool markUsed(const std::string& certCode);
+    std::string toString() const;
 };
 
 #endif // CERTIFICATIONCODE_H
