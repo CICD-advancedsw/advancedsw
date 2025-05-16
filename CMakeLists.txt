@@ -37,6 +37,11 @@ target_link_libraries(dvm_test GTest::gtest_main GTest::gmock_main)
 add_executable(sale_test src/test/sale_test.cpp ${APP_SOURCES_NO_MAIN})
 target_link_libraries(sale_test GTest::gtest_main)
 
+# Domain 테스트 실행 파일
+add_executable(domain_test src/test/domain_test.cpp ${APP_SOURCES_NO_MAIN})
+target_link_libraries(domain_test GTest::gtest_main GTest::gmock_main)
+
 include(GoogleTest)
 gtest_discover_tests(dvm_test)
-gtest_discover_tests(sale_test) 
+gtest_discover_tests(sale_test)
+gtest_discover_tests(domain_test) 
