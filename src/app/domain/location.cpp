@@ -7,14 +7,14 @@ Location::Location(int x, int y) : x(x), y(y) {
 
 }
 
-int Location::calculateDistance(Location otherLocation) {
+int Location::calculateDistance(Location otherLocation) const {
     return abs(x - otherLocation.x) + abs(y - otherLocation.y);
 }
 
-int Location::getX() {
+int Location::getX() const {
     return x;
 }
 
-int Location::getY() {
+int Location::getY() const {
     return y;
 }
