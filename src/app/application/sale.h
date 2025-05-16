@@ -23,7 +23,7 @@ private:
     Sale(SaleRequest request, int targetDvmId);
     
     // 인증 코드를 사용한 판매 요청 처리
-    Sale(SaleRequest request, const string& certCode);
+    Sale(SaleRequest request, const CertificationCode& certCode);
 
 public:
     // Factory methods for creating Sale objects

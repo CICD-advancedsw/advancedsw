@@ -23,7 +23,7 @@ Sale::Sale(SaleRequest request, int targetDvmId)
     prepayment = new Prepayment(targetDvmId);
 }
 
-Sale::Sale(SaleRequest request, const string& certCode) 
+Sale::Sale(SaleRequest request, const CertificationCode& certCode) 
     : Sale(request) {
     prepayment = new Prepayment(0, certCode);
 }
@@ -33,14 +33,15 @@ Sale Sale::createStandaloneSale(SaleRequest request) {
     return Sale(request);
 }
 
-// 여기 손봐야함
 pair<Sale, string> Sale::createSaleForDvm(SaleRequest request, int targetDvmId) {
+    CertificationCode certCode;
     Sale sale(request, targetDvmId);
-    return make_pair(sale, sale.prepayment->isCertificationCode() ? "CERT_CODE" : "");
+    return make_pair(sale, certCode.toString());
 }
 
 Sale Sale::createSaleUsingCertCode(SaleRequest request, string certCode) {
-    return Sale(request, certCode);
+    CertificationCode certCodeObj(certCode);
+    return Sale(request, certCodeObj);
 }
 
 // Public methods
