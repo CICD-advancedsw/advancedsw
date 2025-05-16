@@ -7,28 +7,50 @@ using namespace std; // std namespace 사용 선언
 DVM::DVM(int id, Location loc, list<OtherDVM> otherDvms, list<Item> itemList, map<Item, int> stockList, list<Sale> saleList)
     : dvmId(id), location(loc), dvms(otherDvms), items(itemList), stocks(stockList), sales(saleList) { }
 
+// Private methods
+void DVM::decreaseStock(const string& itemCode, int count) {
+    auto it = stocks.find(Item(itemCode, "", 0));
+    if (it == stocks.end() || it->second < count) {
+        throw runtime_error("Insufficient stock");
+    }
+    stocks[it->first] -= count;
+}
+
+Item DVM::findItem(const string& itemCode) const {
+    auto it = stocks.find(Item(itemCode, "", 0));
+    if (it == stocks.end()) {
+        throw runtime_error("Item not found");
+    }
+    return it->first;
+}
+
 string DVM::queryItems() {
     ostringstream oss;
     for (const auto& item : items) {
-        oss << item << "\n"; 
+        oss << item.printItem() << "\n"; 
     }
     return oss.str();
 }
 
 string DVM::queryStocks(string itemCode, int count) {
     ostringstream oss;
-    auto it = stocks.find(Item(itemCode, "", 0)); // 빈 이름과 가격 0으로 Item 생성
-    if (it != stocks.end()) {
-        int totalPrice = it->first.calculatePrice(count);
-        oss << "음료 가격 총 " << totalPrice << "원 (" << it->first << "* " << count << ")";
-    } else {
-        oss << "현재 해당 자판기에서 구매가 불가합니다.\n";
-
+    try {
+        Item item = findItem(itemCode);
+        int totalPrice = item.calculatePrice(count);
+        // flag:this;item_code:xxx;total_price:xxx;item_name:xxx;count:xxx 형식으로 반환
+        oss << "flag:this;"
+            << "item_code:" << itemCode << ";"
+            << "total_price:" << totalPrice << ";"
+            << "item_name:" << item.printItem() << ";"
+            << "count:" << count;
+    } catch (const runtime_error&) {
         OtherDVM* nearestDvm = nullptr;
         int shortestDistance = INT_MAX;
 
         for (auto& dvm : dvms) {
-            if (dvm.findAvailableStocks(itemCode, count)) {
+            CheckStockRequest request{.item_code = itemCode, .item_num = count};
+            CheckStockResponse response = dvm.findAvailableStocks(request);
+            if (response.item_num > 0) {
                 int distance = location.calculateDistance(dvm.getLocation());
                 if (distance < shortestDistance) {
                     shortestDistance = distance;
@@ -36,37 +58,66 @@ string DVM::queryStocks(string itemCode, int count) {
                 }
             }
         }
+        
         if (nearestDvm) {
-            int x = nearestDvm->getLocation().getX();
-            int y = nearestDvm->getLocation().getY();
-            oss << "(" << x << "," << y << ") 위치의 자판기에서 구매가 가능합니다.\n";
+            // flag:other;item_code:xxx;count:xxx;x:xxx;y:xxx 형식으로 반환
+            oss << "flag:other;"
+                << "item_code:" << itemCode << ";"
+                << "count:" << count << ";"
+                << "x:" << nearestDvm->getLocation().getX() << ";"
+                << "y:" << nearestDvm->getLocation().getY();
         } else {
-            oss << "해당 음료를 제공할 수 있는 자판기가 없습니다.\n";
+            // flag:not_available;item_code:xxx 형식으로 반환
+            oss << "flag:not_available;"
+                << "item_code:" << itemCode;
         }
     }
     return oss.str();
 }
 
 void DVM::requestOrder(SaleRequest request) {
+    Item item = findItem(request.itemCode);
+    request.item = item;
+    decreaseStock(request.itemCode, request.itemNum);
     Sale sale = Sale::createStandaloneSale(request);
     sales.push_back(sale);
 }
 
 pair<Location, string> DVM::requestOrder(int targetDvmId, SaleRequest request) {
+    Item item = findItem(request.itemCode);
+    request.item = item;
+    decreaseStock(request.itemCode, request.itemNum);
     auto [sale, certcode] = Sale::createSaleForDvm(request, targetDvmId);
     sales.push_back(sale);
 
-    for (const auto& dvm : dvms) {
-        if (dvm.getId() == targetDvmId) {
+    for (auto& dvm : dvms) {
+        if (dvm.getDvmId() == targetDvmId) {
+            // 선결제 처리 요청
+            askPrepaymentRequest askRequest{
+                .item_code = request.itemCode,
+                .item_num = request.itemNum,
+                .cert_code = certcode
+            };
+            askPrepaymentResponse response = dvm.askForPrepayment(askRequest);
+            if (!response.availability) {
+                throw runtime_error("Prepayment not available");
+            }
             return make_pair(dvm.getLocation(), certcode);
         }
     }
-
     throw DVMNotFoundException(targetDvmId);
 }
 
 void DVM::saveSaleFromOther(string itemCode, int itemNum, string certCode) {
-    Sale sale = Sale::createSaleUsingCertCode(SaleRequest{.itemCode = itemCode, .itemNum = itemNum, .card = ""}, certCode);
+    Item item = findItem(itemCode);
+    decreaseStock(itemCode, itemNum);
+    SaleRequest request{
+        .itemCode = itemCode,
+        .itemNum = itemNum,
+        .item = item
+    };
+    
+    Sale sale = Sale::createSaleUsingCertCode(request, certCode);
     sales.push_back(sale);
 }
 

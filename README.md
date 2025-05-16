@@ -1,5 +1,13 @@
 # advancedsw
 
+아래 커맨드로 빌드가능 
+
+```bash
+cd build
+cmake ..
+make
+```
+
 test test github test kyunghee modified
 test on 20250503
 more test using push

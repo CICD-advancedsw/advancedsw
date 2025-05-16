@@ -14,7 +14,7 @@ std::string Item::printItem() const
     return name + " (" + itemCode + ")";
 }
 
-int Item::calculatePrice(int num)
+int Item::calculatePrice(int num) const
 {
     return price * num;
 }

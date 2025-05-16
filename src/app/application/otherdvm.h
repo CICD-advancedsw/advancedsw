@@ -3,6 +3,7 @@
 
 #include <string>
 #include "../domain/location.h"
+#include "../dto.h"
 
 using namespace std;
 
@@ -13,8 +14,8 @@ private:
 
 public:
     OtherDVM(int id, const Location& loc);
-    bool findAvailableStocks(const std::string& itemCode);
-    bool askForPrepayment();
+    CheckStockResponse findAvailableStocks(const CheckStockRequest& request);
+    askPrepaymentResponse askForPrepayment(const askPrepaymentRequest& request);
     const Location& getLocation() const;
     int getDvmId() const;
 };
