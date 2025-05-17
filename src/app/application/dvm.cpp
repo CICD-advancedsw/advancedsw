@@ -34,8 +34,10 @@ string DVM::queryItems() {
 
 string DVM::queryStocks(string itemCode, int count) {
     ostringstream oss;
-    try {
-        Item item = findItem(itemCode);
+    auto it = stocks.find(Item(itemCode, "", 0));
+    
+    if (it != stocks.end() && it->second >= count) {
+        Item item = it->first;
         int totalPrice = item.calculatePrice(count);
         // flag:this;item_code:xxx;total_price:xxx;item_name:xxx;count:xxx 형식으로 반환
         oss << "flag:this;"
@@ -43,7 +45,7 @@ string DVM::queryStocks(string itemCode, int count) {
             << "total_price:" << totalPrice << ";"
             << "item_name:" << item.printItem() << ";"
             << "count:" << count;
-    } catch (const runtime_error&) {
+    } else {
         OtherDVM* nearestDvm = nullptr;
         int shortestDistance = INT_MAX;
 

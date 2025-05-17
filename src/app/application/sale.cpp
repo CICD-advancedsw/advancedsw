@@ -28,6 +28,35 @@ Sale::Sale(SaleRequest request, const CertificationCode& certCode)
     prepayment = new Prepayment(0, certCode);
 }
 
+// Copy constructor
+Sale::Sale(const Sale& other)
+    : saleId(other.saleId), datetime(other.datetime),
+      item(other.item), count(other.count),
+      totalAmount(other.totalAmount), prepayment(nullptr) {
+    if (other.prepayment) {
+        prepayment = new Prepayment(*other.prepayment);
+    }
+}
+
+// Assignment operator
+Sale& Sale::operator=(const Sale& other) {
+    if (this != &other) {
+        saleId = other.saleId;
+        datetime = other.datetime;
+        item = other.item;
+        count = other.count;
+        totalAmount = other.totalAmount;
+        
+        delete prepayment;
+        prepayment = nullptr;
+        
+        if (other.prepayment) {
+            prepayment = new Prepayment(*other.prepayment);
+        }
+    }
+    return *this;
+}
+
 // Factory methods
 Sale Sale::createStandaloneSale(SaleRequest request) {
     return Sale(request);

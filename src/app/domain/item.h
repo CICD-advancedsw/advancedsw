@@ -19,6 +19,11 @@ public:
     bool operator<(const Item& other) const {
         return itemCode < other.itemCode; // Compare based on id
     }
+
+    // Add getters (for tests)
+    std::string getItemCode() const { return itemCode; }
+    std::string getName() const { return name; }
+    int getPrice() const { return price; }
 };
 
 #endif // ITEM_H

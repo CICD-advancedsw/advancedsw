@@ -35,6 +35,12 @@ public:
     bool receivePrepaidItem(const string& certCode);
 
     ~Sale();
+
+    // methods for testing
+    // Copy constructor
+    Sale(const Sale& other);   
+    // Assignment operator
+    Sale& operator=(const Sale& other);
 };
 
 #endif // SALE_H
