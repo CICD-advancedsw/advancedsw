@@ -32,7 +32,7 @@ int main()
   // 빈 Sale 리스트
   std::list<Sale> saleList;
 
-  DVM dvm(1, loc, otherDvms, itemList, stockList, saleList);
+  DVM dvm(1, loc, stockList, itemList, saleList, otherDvms);
   Controller controller(&dvm);
 
   // controller 실행
