@@ -1,12 +1,26 @@
 ﻿#include "controller.h"
-#include <iostream>
-#include <regex>
-
-using namespace std;
 
 Controller::Controller(DVM *dvm) : dvm(dvm) {}
 
 Controller::~Controller() {}
+
+map<string, string> Controller::parseStockResponse(const string &response)
+{
+    map<string, string> parsed;
+    istringstream stream(response);
+    string token;
+    while (getline(stream, token, ';'))
+    {
+        size_t pos = token.find(':');
+        if (pos != string::npos)
+        {
+            string key = token.substr(0, pos);
+            string value = token.substr(pos + 1);
+            parsed[key] = value;
+        }
+    }
+    return parsed;
+}
 
 void Controller::run()
 {
@@ -15,6 +29,72 @@ void Controller::run()
         int choice = displayMenu();
         handleMenuSelection(choice);
     }
+}
+
+void Controller::runServer()
+{
+    int server_fd = socket(AF_INET, SOCK_STREAM, 0);
+    if (server_fd < 0)
+    {
+        cerr << "Failed to create server socket\n";
+        return;
+    }
+
+    struct sockaddr_in server_addr;
+    server_addr.sin_family = AF_INET;
+    server_addr.sin_addr.s_addr = INADDR_ANY;
+    server_addr.sin_port = htons(Config::get().port);
+
+    if (::bind(server_fd, (struct sockaddr *)&server_addr, sizeof(server_addr)) < 0)
+    {
+        cerr << "Bind failed\n";
+        return;
+    }
+
+    if (::listen(server_fd, 5) < 0)
+    {
+        cerr << "Listen failed\n";
+        return;
+    }
+
+    // cout << "DVM Controller Server is running on port 9000...\n";
+
+    while (true)
+    {
+        int client_fd = ::accept(server_fd, nullptr, nullptr);
+        if (client_fd < 0)
+        {
+            cerr << "Accept failed\n";
+            continue;
+        }
+
+        char buffer[1024] = {0};
+        int bytesRead = ::read(client_fd, buffer, sizeof(buffer));
+        if (bytesRead > 0)
+        {
+            string request(buffer);
+            string response;
+
+            if (request.find("msg_type:req_stock") != string::npos)
+            {
+                response = handleCheckStockRequest(request);
+            }
+            else if (request.find("msg_type:req_prepay") != string::npos)
+            {
+                response = handlePrepaymentRequest(request);
+            }
+            else
+            {
+                response = "msg_type:error;detail:unknown_request;";
+            }
+
+            ::send(client_fd, response.c_str(), response.size(), 0);
+        }
+
+        ::close(client_fd);
+    }
+
+    ::close(server_fd);
 }
 
 int Controller::displayMenu()
@@ -63,7 +143,6 @@ void Controller::handleBeverageSelection()
     string menu;
     int count;
     cin >> menu >> count;
-
     try
     {
         int menuInt = stoi(menu);
@@ -79,23 +158,45 @@ void Controller::handleBeverageSelection()
                  << endl;
             return;
         }
+        SaleRequest request{menu, count, Item("", "", 0)};
         string msg = dvm->queryStocks(menu, count);
-        if (msg == "재고 없음")
+        auto parsed = parseStockResponse(msg);
+
+        string flag = parsed["flag"];
+        string item_code = parsed["item_code"];
+        int countParsed = parsed.count("count") ? stoi(parsed["count"]) : 0;
+        string target = parsed["target"];
+        string item_name = parsed["item_name"];
+        int total_price = parsed.count("total_price") ? stoi(parsed["total_price"]) : 0;
+        int x = parsed.count("x") ? stoi(parsed["x"]) : 0;
+        int y = parsed.count("y") ? stoi(parsed["y"]) : 0;
+
+        if (flag == "other")
         {
-            // todo: 선결제 로직 추가
+            cout << "\n현재 해당 자판기에서 구매가 불가합니다.\n";
+            cout << "(" << x << ", " << y << ") 위치의 자판기에서 구매가 가능합니다.\n" << endl;
+            cout << "음료 가격 총 " << total_price << "원 (" << item_name << " " << countParsed << "개 ";
+            cout << total_price / count << "원 * " << count << ")" << endl; 
+            pair<Location, string> response = dvm->requestOrder(stoi(target), request);
+            cout << "\n결제가 완료되었습니다." << endl;
         }
-        else
+        else if (flag == "this")
         {
-            cout << msg << endl;
-            SaleRequest request{menu, count, Item("", "", 0)};
+            cout << "음료 가격 총 " << total_price << "원 (" << item_name << " " << countParsed << "개 ";
+            cout << total_price / count << "원 * " << count << ")" << endl; 
             dvm->requestOrder(request);
             cout << "\n결제가 완료되었습니다." << endl;
-            cout << "\n메인 화면으로 돌아갑니다." << endl;
-            cout << "계속하려면 Enter를 누르세요..." << endl;
-            cin.ignore();
-            cin.get(); // Enter 키 입력 대기
-            return;
         }
+        else if (flag == "not_available")
+        {
+            cout << "\n요청하신 음료(" << item_code << ")는 현재 재고가 없습니다.\n";
+        }
+
+        cout << "\n메인 화면으로 돌아갑니다." << endl;
+        cout << "계속하려면 Enter를 누르세요..." << endl;
+        cin.ignore();
+        cin.get();
+        return;
     }
     catch (...)
     {
@@ -110,34 +211,134 @@ void Controller::handlePrepaidPurchase()
     cout << "\n선결제 인증코드를 입력해주세요.\n"
          << endl;
 
-    std::regex certCodePattern("^[a-zA-Z0-9]{5}$"); // 인증코드 형식: 영문자와 숫자로 구성된 5자리
+    regex certCodePattern("^[a-zA-Z0-9]{5}$"); // 인증코드 형식: 영문자와 숫자로 구성된 5자리
 
     while (true)
     {
-        cout << "Enter your prepayment code : ";
-        string certCode;
-        cin >> certCode;
-
-        if (!std::regex_match(certCode, certCodePattern))
+        try
         {
-            cout << "인증코드를 잘못 입력하셨습니다. 다시 입력해주세요.\n"
-                 << endl;
-            continue;
-        }
+            cout << "Enter your prepayment code : ";
+            string certCode;
+            cin >> certCode;
 
-        bool result = dvm->processPrepaidItem(certCode);
-        // todo: result에 따른 처리 로직
-        //  if (!result)
-        //  {
-        //      cout << "인증코드를 잘못 입력하셨습니다. 다시 입력해주세요\n"
-        //           << endl;
-        //  }
-        //  else
-        //  {
-        //      cout << result << endl;
-        //      break;
-        //  }
+            if (!regex_match(certCode, certCodePattern))
+            {
+                throw invalid_argument("인증코드를 잘못 입력하셨습니다. 다시 입력해주세요.");
+            }
+
+            bool result = dvm->processPrepaidItem(certCode);
+            if (!result)
+            {
+                cout << "이 자판기에서 선결제한 음료가 없습니다.\n"
+                     << endl;
+            }
+            else
+            {
+                cout << "선결제 한 음료가 제공되었습니다.\n" << endl;
+                break;
+            }
+        }
+        catch (const exception &e)
+        {
+            cout << "인증코드를 잘못 입력하셨습니다. 다시 입력해주세요.\n" << endl;
+        }
     }
 
-    return;
+    cout << "\n메인 화면으로 돌아갑니다." << endl;
+    cout << "계속하려면 Enter를 누르세요..." << endl;
+    cin.ignore();
+    cin.get();
+}
+
+string Controller::handleCheckStockRequest(const string &msg)
+{
+    istringstream iss(msg);
+    string token, item_code, src_id;
+    int item_num = 0;
+
+    while (getline(iss, token, ';'))
+    {
+        size_t pos = token.find(':');
+        if (pos == string::npos)
+            continue;
+        string key = token.substr(0, pos);
+        string value = token.substr(pos + 1);
+        if (key == "item_code")
+            item_code = value;
+        else if (key == "item_num")
+            src_id = value;
+        else if (key == "src_id")
+            src_id = value;
+        else if (key == "item_num")
+            item_num = stoi(value);
+    }
+    
+    string result = dvm->queryStocks(item_code, item_num);
+    auto parsed = parseStockResponse(result);
+
+    string resp_num;
+    if(parsed["flag"] == "other")
+    {
+        resp_num = "0";
+    }
+    else if(parsed["flag"] == "this")
+    {
+        if(parsed.count("count"))
+            resp_num = parsed["count"];
+    }
+
+    ostringstream oss;
+    oss << "msg_type:resp_stock;"
+        << "src_id:" << dvmId << ";"
+        << "dst_id:" << src_id << ";"
+        << "item_code:" << item_code << ";"
+        << "item_num:" << resp_num << ";"
+        << "coor_x:" << location.getX() << ";"
+        << "coor_y:" << location.getY() << ";";
+
+    return oss.str();
+}
+
+string Controller::handlePrepaymentRequest(const string &msg)
+{
+    istringstream iss(msg);
+    string token, item_code, src_id;
+    int item_num = 0;
+    string cert_code;
+
+    while (getline(iss, token, ';'))
+    {
+        size_t pos = token.find(':');
+        if (pos == string::npos)
+            continue;
+        string key = token.substr(0, pos);
+        string value = token.substr(pos + 1);
+        if (key == "item_code")
+            item_code = value;
+        else if (key == "item_num")
+            item_num = stoi(value);
+        else if (key == "cert_code")
+            cert_code = value;
+        else if (key == "src_id")
+            src_id = value;
+    }
+
+    string result = dvm->queryStocks(item_code, item_num);
+    auto parsed = parseStockResponse(result);
+    string availability = "F";
+
+    if(parsed["flag"] == "this")
+    {
+        availability = "T";
+    }
+
+    ostringstream oss;
+    oss << "msg_type:resp_prepay;"
+        << "src_id:T" << dvmId << ";"
+        << "dst_id:" << src_id << ";"
+        << "item_code:" << item_code << ";"
+        << "item_num:" << item_num << ";"
+        << "availability:" << availability << ";";
+
+    return oss.str();
 }

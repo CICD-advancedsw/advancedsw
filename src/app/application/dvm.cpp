@@ -1,11 +1,7 @@
-#include "dvm.h"
+﻿#include "dvm.h"
 
-#include <iostream>
-#include <sstream>
-using namespace std; // std namespace 사용 선언
-
-DVM::DVM(int id, Location loc, list<OtherDVM> otherDvms, list<Item> itemList, map<Item, int> stockList, list<Sale> saleList)
-    : dvmId(id), location(loc), dvms(otherDvms), items(itemList), stocks(stockList), sales(saleList) { }
+DVM::DVM(int id, Location loc, map<Item, int> stockList, list<Item> itemList, list<Sale> saleList, list<OtherDVM> otherDvMs)
+    : dvmId(id), location(loc), stocks(stockList), items(itemList), sales(saleList), dvms(otherDvMs) { }
 
 // Private methods
 void DVM::decreaseStock(const string& itemCode, int count) {
@@ -51,7 +47,7 @@ string DVM::queryStocks(string itemCode, int count) {
 
         for (auto& dvm : dvms) {
             CheckStockRequest request{.item_code = itemCode, .item_num = count};
-            CheckStockResponse response = dvm.findAvailableStocks(request);
+            CheckStockResponse response = dvm.findAvailableStocks(request, dvmId);
             if (response.item_num > 0) {
                 int distance = location.calculateDistance(dvm.getLocation());
                 if (distance < shortestDistance) {
@@ -62,12 +58,14 @@ string DVM::queryStocks(string itemCode, int count) {
         }
         
         if (nearestDvm) {
-            // flag:other;item_code:xxx;count:xxx;x:xxx;y:xxx 형식으로 반환
+            //target 추가
+            // flag:other;item_code:xxx;count:xxx;x:xxx;y:xxx;target:xxx 형식으로 반환
             oss << "flag:other;"
                 << "item_code:" << itemCode << ";"
                 << "count:" << count << ";"
                 << "x:" << nearestDvm->getLocation().getX() << ";"
-                << "y:" << nearestDvm->getLocation().getY();
+                << "y:" << nearestDvm->getLocation().getY() << ";"
+                << "target: " << nearestDvm->getDvmId();
         } else {
             // flag:not_available;item_code:xxx 형식으로 반환
             oss << "flag:not_available;"
@@ -94,13 +92,12 @@ pair<Location, string> DVM::requestOrder(int targetDvmId, SaleRequest request) {
 
     for (auto& dvm : dvms) {
         if (dvm.getDvmId() == targetDvmId) {
-            // 선결제 처리 요청
             askPrepaymentRequest askRequest{
                 .item_code = request.itemCode,
                 .item_num = request.itemNum,
                 .cert_code = certcode
             };
-            askPrepaymentResponse response = dvm.askForPrepayment(askRequest);
+            askPrepaymentResponse response = dvm.askForPrepayment(askRequest, dvmId);
             if (!response.availability) {
                 throw runtime_error("Prepayment not available");
             }

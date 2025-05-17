@@ -4,6 +4,8 @@
 #include <string>
 #include <map>
 #include <list>
+#include <iostream>
+#include <sstream>
 #include "sale.h"
 #include "../domain/location.h"
 #include "../domain/item.h"
@@ -30,7 +32,7 @@ private:
     void decreaseStock(const string& itemCode, int count);
 
 public:
-    DVM(int id, Location loc, list<OtherDVM> otherDvMs, list<Item> itemList, map<Item, int> stockList, list<Sale> saleList); // 생성자를 통한 의존성 주입    
+    DVM(int id, Location loc, map<Item, int> stockList, list<Item> itemList, list<Sale> saleList, list<OtherDVM> otherDvMs); // 생성자를 통한 의존성 주입    
     // 자판기의 아이템 목록을 조회
     string queryItems();
     
