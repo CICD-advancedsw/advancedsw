@@ -4,6 +4,24 @@ Controller::Controller(DVM *dvm) : dvm(dvm) {}
 
 Controller::~Controller() {}
 
+map<string, string> Controller::parseStockResponse(const string &response)
+{
+    map<string, string> parsed;
+    istringstream stream(response);
+    string token;
+    while (getline(stream, token, ';'))
+    {
+        size_t pos = token.find(':');
+        if (pos != string::npos)
+        {
+            string key = token.substr(0, pos);
+            string value = token.substr(pos + 1);
+            parsed[key] = value;
+        }
+    }
+    return parsed;
+}
+
 void Controller::run()
 {
     while (true)
@@ -18,7 +36,7 @@ void Controller::runServer()
     int server_fd = socket(AF_INET, SOCK_STREAM, 0);
     if (server_fd < 0)
     {
-        std::cerr << "Failed to create server socket\n";
+        cerr << "Failed to create server socket\n";
         return;
     }
 
@@ -29,24 +47,24 @@ void Controller::runServer()
 
     if (::bind(server_fd, (struct sockaddr *)&server_addr, sizeof(server_addr)) < 0)
     {
-        std::cerr << "Bind failed\n";
+        cerr << "Bind failed\n";
         return;
     }
 
     if (::listen(server_fd, 5) < 0)
     {
-        std::cerr << "Listen failed\n";
+        cerr << "Listen failed\n";
         return;
     }
 
-    std::cout << "DVM Controller Server is running on port 9000...\n";
+    cout << "DVM Controller Server is running on port 9000...\n";
 
     while (true)
     {
         int client_fd = ::accept(server_fd, nullptr, nullptr);
         if (client_fd < 0)
         {
-            std::cerr << "Accept failed\n";
+            cerr << "Accept failed\n";
             continue;
         }
 
@@ -54,14 +72,14 @@ void Controller::runServer()
         int bytesRead = ::read(client_fd, buffer, sizeof(buffer));
         if (bytesRead > 0)
         {
-            std::string request(buffer);
-            std::string response;
+            string request(buffer);
+            string response;
 
-            if (request.find("msg_type:req_stock") != std::string::npos)
+            if (request.find("msg_type:req_stock") != string::npos)
             {
                 response = handleCheckStockRequest(request);
             }
-            else if (request.find("msg_type:req_prepay") != std::string::npos)
+            else if (request.find("msg_type:req_prepay") != string::npos)
             {
                 response = handlePrepaymentRequest(request);
             }
@@ -142,53 +160,16 @@ void Controller::handleBeverageSelection()
         }
         SaleRequest request{menu, count, Item("", "", 0)};
         string msg = dvm->queryStocks(menu, count);
-        istringstream iss(msg);
-        string token, item_code, target;
-        int countParsed = 0;
-        while (getline(iss, token, ';'))
-        {
-            size_t pos = token.find(':');
-            if (pos == string::npos)
-                continue;
-            string key = token.substr(0, pos);
-            string value = token.substr(pos + 1);
-            if (key == "item_code")
-                item_code = value;
-            else if (key == "count")
-                countParsed = stoi(value);
-            else if (key == "target")
-                target = value;
-        }
+        auto parsed = parseStockResponse(msg);
 
-        istringstream iss(msg);
-        string token, item_code, target, item_name;
-        int countParsed = 0, total_price = 0, x = 0, y = 0;
-        string flag;
-
-        while (getline(iss, token, ';'))
-        {
-            size_t pos = token.find(':');
-            if (pos == string::npos)
-                continue;
-            string key = token.substr(0, pos);
-            string value = token.substr(pos + 1);
-            if (key == "flag")
-                flag = value;
-            else if (key == "item_code")
-                item_code = value;
-            else if (key == "count")
-                countParsed = stoi(value);
-            else if (key == "target")
-                target = value;
-            else if (key == "item_name")
-                item_name = value;
-            else if (key == "total_price")
-                total_price = stoi(value);
-            else if (key == "x")
-                x = stoi(value);
-            else if (key == "y")
-                y = stoi(value);
-        }
+        string flag = parsed["flag"];
+        string item_code = parsed["item_code"];
+        int countParsed = parsed.count("count") ? stoi(parsed["count"]) : 0;
+        string target = parsed["target"];
+        string item_name = parsed["item_name"];
+        int total_price = parsed.count("total_price") ? stoi(parsed["total_price"]) : 0;
+        int x = parsed.count("x") ? stoi(parsed["x"]) : 0;
+        int y = parsed.count("y") ? stoi(parsed["y"]) : 0;
 
         if (flag == "other")
         {
@@ -230,7 +211,7 @@ void Controller::handlePrepaidPurchase()
     cout << "\n선결제 인증코드를 입력해주세요.\n"
          << endl;
 
-    std::regex certCodePattern("^[a-zA-Z0-9]{5}$"); // 인증코드 형식: 영문자와 숫자로 구성된 5자리
+    regex certCodePattern("^[a-zA-Z0-9]{5}$"); // 인증코드 형식: 영문자와 숫자로 구성된 5자리
 
     while (true)
     {
@@ -240,9 +221,9 @@ void Controller::handlePrepaidPurchase()
             string certCode;
             cin >> certCode;
 
-            if (!std::regex_match(certCode, certCodePattern))
+            if (!regex_match(certCode, certCodePattern))
             {
-                throw std::invalid_argument("인증코드를 잘못 입력하셨습니다. 다시 입력해주세요.");
+                throw invalid_argument("인증코드를 잘못 입력하셨습니다. 다시 입력해주세요.");
             }
 
             bool result = dvm->processPrepaidItem(certCode);
@@ -257,7 +238,7 @@ void Controller::handlePrepaidPurchase()
                 break;
             }
         }
-        catch (const std::exception &e)
+        catch (const exception &e)
         {
             cout << "인증코드를 잘못 입력하셨습니다. 다시 입력해주세요.\n" << endl;
         }
@@ -285,9 +266,25 @@ string Controller::handleCheckStockRequest(const string &msg)
         if (key == "item_code")
             item_code = value;
         else if (key == "item_num")
-            item_num = stoi(value);
+            src_id = value;
         else if (key == "src_id")
             src_id = value;
+        else if (key == "item_num")
+            item_num = stoi(value);
+    }
+    
+    string result = dvm->queryStocks(item_code, item_num);
+    auto parsed = parseStockResponse(result);
+
+    string resp_num;
+    if(parsed["flag"] == "other")
+    {
+        resp_num = "0";
+    }
+    else if(parsed["flag"] == "this")
+    {
+        if(parsed.count("count"))
+            resp_num = parsed["count"];
     }
 
     ostringstream oss;
@@ -295,7 +292,7 @@ string Controller::handleCheckStockRequest(const string &msg)
         << "src_id:" << dvmId << ";"
         << "dst_id:" << src_id << ";"
         << "item_code:" << item_code << ";"
-        << "item_num:" << item_num << ";"
+        << "item_num:" << resp_num << ";"
         << "coor_x:" << location.getX() << ";"
         << "coor_y:" << location.getY() << ";";
 
@@ -326,13 +323,22 @@ string Controller::handlePrepaymentRequest(const string &msg)
             src_id = value;
     }
 
+    string result = dvm->queryStocks(item_code, item_num);
+    auto parsed = parseStockResponse(result);
+    string availability = "F";
+
+    if(parsed["flag"] == "this")
+    {
+        availability = "T";
+    }
+
     ostringstream oss;
     oss << "msg_type:resp_prepay;"
         << "src_id:T" << dvmId << ";"
         << "dst_id:" << src_id << ";"
         << "item_code:" << item_code << ";"
         << "item_num:" << item_num << ";"
-        << "availability:T;";
+        << "availability:" << availability << ";";
 
     return oss.str();
 }

@@ -19,6 +19,7 @@ private:
     
     //추가
     int dvmId;
+    map<string, string> parseStockResponse(const string &response);
     string handleCheckStockRequest(const string &msg);
     string handlePrepaymentRequest(const string &msg);
 public:
