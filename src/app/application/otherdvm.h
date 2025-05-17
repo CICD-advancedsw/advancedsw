@@ -24,15 +24,11 @@ private:
     // 추가
     const char* targetIp;
     int port;
-
     bool establishConnection(int &sock) const;
-
 public:
     OtherDVM(int id, const Location &loc);
     CheckStockResponse findAvailableStocks(const CheckStockRequest &request,int senderDvmId);
     askPrepaymentResponse askForPrepayment(const askPrepaymentRequest &request, int senderDvmId);
-    string handleCheckStockRequest(const string &msg);
-    string handlePrepaymentRequest(const string &msg);
     const Location &getLocation() const;
     int getDvmId() const;
 };
