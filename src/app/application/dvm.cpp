@@ -62,12 +62,14 @@ string DVM::queryStocks(string itemCode, int count) {
         }
         
         if (nearestDvm) {
-            // 지원 수정 : targetDvmid를 반환해줘야 함
-            // flag:other;item_code:xxx;count:xxx;target:xxx 형식으로 반환
+            //target 추가
+            // flag:other;item_code:xxx;count:xxx;x:xxx;y:xxx;target:xxx 형식으로 반환
             oss << "flag:other;"
                 << "item_code:" << itemCode << ";"
                 << "count:" << count << ";"
-                << "target:" << nearestDvm->getDvmId() << ";";
+                << "x:" << nearestDvm->getLocation().getX() << ";"
+                << "y:" << nearestDvm->getLocation().getY() << ";"
+                << "target: " << nearestDvm->getDvmId();
         } else {
             // flag:not_available;item_code:xxx 형식으로 반환
             oss << "flag:not_available;"

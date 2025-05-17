@@ -1,34 +1,44 @@
-﻿#include "application/dvm.h"
+﻿#include <iostream>
+#include <thread>
+#include "application/otherdvm.h"
+#include "application/sale.h"
+#include "application/dvm.h"
 #include "presentation/controller.h"
 #include <list>
 #include <map>
 
-int main(void) {
-    // 더미 Location
-    Location loc(1, 2);
+using namespace std;
 
-    // 더미 OtherDVM 리스트
-    std::list<OtherDVM> otherDvms;
-    otherDvms.emplace_back(2, Location(3, 4));
-    otherDvms.emplace_back(3, Location(5, 6));
+int main()
+{
+  Location loc(1, 2);
 
-    // 더미 Item 리스트
-    std::list<Item> itemList;
-    itemList.emplace_back("A001", "콜라", 1500);
-    itemList.emplace_back("A002", "사이다", 1400);
+  // 더미 OtherDVM 리스트
+  list<OtherDVM> otherDvms;
+  otherDvms.emplace_back(2, Location(3, 4));
+  otherDvms.emplace_back(3, Location(5, 6));
 
-    // 더미 stockList
-    std::map<Item, int> stockList;
-    for (const auto& item : itemList) {
-        stockList[item] = 10;
-    }
+  // 더미 Item 리스트
+  std::list<Item> itemList;
+  itemList.emplace_back("01", "콜라", 1500);
+  itemList.emplace_back("02", "사이다", 1400);
 
-    // 빈 Sale 리스트
-    std::list<Sale> saleList;
+  // 더미 stockList
+  std::map<Item, int> stockList;
+  for (const auto& item : itemList) {
+      stockList[item] = 10;
+  }
 
-    DVM dvm(1, loc, otherDvms, itemList, stockList, saleList);
-    Controller controller(&dvm);
-    controller.run(); 
+  // 빈 Sale 리스트
+  std::list<Sale> saleList;
 
-    return 0;
+  DVM dvm(1, loc, otherDvms, itemList, stockList, saleList);
+  Controller controller(&dvm);
+
+  // controller 실행
+  std::thread serverThread(&Controller::runServer, &controller);
+  controller.run();
+  serverThread.join();
+
+  return 0;
 }
