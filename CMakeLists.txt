@@ -49,9 +49,14 @@ target_link_libraries(otherdvm_test GTest::gtest_main GTest::gmock_main)
 add_executable(controller_test src/test/controller_test.cpp ${APP_SOURCES_NO_MAIN})
 target_link_libraries(controller_test GTest::gtest_main GTest::gmock_main)
 
+# 통합 테스트 실행 파일
+add_executable(integration_test src/test/integration_test.cpp ${APP_SOURCES_NO_MAIN})
+target_link_libraries(integration_test GTest::gtest_main GTest::gmock_main)
+
 include(GoogleTest)
 gtest_discover_tests(dvm_test)
 gtest_discover_tests(sale_test)
 gtest_discover_tests(domain_test) 
 gtest_discover_tests(otherdvm_test)
 gtest_discover_tests(controller_test)
+gtest_discover_tests(integration_test)
