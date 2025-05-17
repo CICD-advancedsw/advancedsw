@@ -1,4 +1,4 @@
-#include "dvm.h"
+﻿#include "dvm.h"
 
 #include <iostream>
 #include <sstream>
@@ -51,7 +51,7 @@ string DVM::queryStocks(string itemCode, int count) {
 
         for (auto& dvm : dvms) {
             CheckStockRequest request{.item_code = itemCode, .item_num = count};
-            CheckStockResponse response = dvm.findAvailableStocks(request);
+            CheckStockResponse response = dvm.findAvailableStocks(request, dvmId);
             if (response.item_num > 0) {
                 int distance = location.calculateDistance(dvm.getLocation());
                 if (distance < shortestDistance) {
@@ -62,12 +62,12 @@ string DVM::queryStocks(string itemCode, int count) {
         }
         
         if (nearestDvm) {
-            // flag:other;item_code:xxx;count:xxx;x:xxx;y:xxx 형식으로 반환
+            // 지원 수정 : targetDvmid를 반환해줘야 함
+            // flag:other;item_code:xxx;count:xxx;target:xxx 형식으로 반환
             oss << "flag:other;"
                 << "item_code:" << itemCode << ";"
                 << "count:" << count << ";"
-                << "x:" << nearestDvm->getLocation().getX() << ";"
-                << "y:" << nearestDvm->getLocation().getY();
+                << "target:" << nearestDvm->getDvmId() << ";";
         } else {
             // flag:not_available;item_code:xxx 형식으로 반환
             oss << "flag:not_available;"
@@ -94,13 +94,12 @@ pair<Location, string> DVM::requestOrder(int targetDvmId, SaleRequest request) {
 
     for (auto& dvm : dvms) {
         if (dvm.getDvmId() == targetDvmId) {
-            // 선결제 처리 요청
             askPrepaymentRequest askRequest{
                 .item_code = request.itemCode,
                 .item_num = request.itemNum,
                 .cert_code = certcode
             };
-            askPrepaymentResponse response = dvm.askForPrepayment(askRequest);
+            askPrepaymentResponse response = dvm.askForPrepayment(askRequest, dvmId);
             if (!response.availability) {
                 throw runtime_error("Prepayment not available");
             }
