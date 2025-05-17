@@ -43,7 +43,7 @@ void Controller::runServer()
     struct sockaddr_in server_addr;
     server_addr.sin_family = AF_INET;
     server_addr.sin_addr.s_addr = INADDR_ANY;
-    server_addr.sin_port = htons(9000);
+    server_addr.sin_port = htons(Config::get().port);
 
     if (::bind(server_fd, (struct sockaddr *)&server_addr, sizeof(server_addr)) < 0)
     {
@@ -57,7 +57,7 @@ void Controller::runServer()
         return;
     }
 
-    cout << "DVM Controller Server is running on port 9000...\n";
+    // cout << "DVM Controller Server is running on port 9000...\n";
 
     while (true)
     {

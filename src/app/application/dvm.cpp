@@ -1,11 +1,7 @@
 ﻿#include "dvm.h"
 
-#include <iostream>
-#include <sstream>
-using namespace std; // std namespace 사용 선언
-
-DVM::DVM(int id, Location loc, list<OtherDVM> otherDvms, list<Item> itemList, map<Item, int> stockList, list<Sale> saleList)
-    : dvmId(id), location(loc), dvms(otherDvms), items(itemList), stocks(stockList), sales(saleList) { }
+DVM::DVM(int id, Location loc, map<Item, int> stockList, list<Item> itemList, list<Sale> saleList, list<OtherDVM> otherDvMs)
+    : dvmId(id), location(loc), stocks(stockList), items(itemList), sales(saleList), dvms(otherDvMs) { }
 
 // Private methods
 void DVM::decreaseStock(const string& itemCode, int count) {

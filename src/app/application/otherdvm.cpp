@@ -1,7 +1,7 @@
 #include "otherdvm.h"
 
 OtherDVM::OtherDVM(int id, const Location &loc)
-    : dvmId(id), location(loc) {}
+    : dvmId(id), location(loc), targetIp(Config::get().target_ip), port(Config::get().port) {}
 
 bool OtherDVM::establishConnection(int &sock) const {
     sock = socket(AF_INET, SOCK_STREAM, 0);

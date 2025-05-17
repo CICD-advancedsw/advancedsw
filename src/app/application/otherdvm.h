@@ -22,8 +22,8 @@ private:
     Location location;
 
     // 추가
-    char* targetIp = "127.0.0.1";
-    int port = 9000;
+    const char* targetIp;
+    int port;
 
     bool establishConnection(int &sock) const;
 
