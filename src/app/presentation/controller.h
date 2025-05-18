@@ -1,13 +1,14 @@
 #ifndef CONTROLLER_H
 #define CONTROLLER_H
 
-#include <map>
+#include "../external/card.h"
 #include "../domain/location.h"
 #include "../domain/item.h"
 #include "../application/dvm.h"
 #include <string>
 #include <iostream>
 #include <regex>
+#include <map>
 
 using namespace std;
 

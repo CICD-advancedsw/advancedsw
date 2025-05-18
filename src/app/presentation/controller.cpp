@@ -109,17 +109,31 @@ void Controller::runServer()
 
 int Controller::displayMenu()
 {
-    cout << "\n안녕하세요, Team1 DVM 입니다.\n"
-         << endl;
-    cout << "희망하는 옵션을 선택해주세요.\n"
-         << endl;
+    cout << "\n안녕하세요, Team1 DVM 입니다.\n" << endl;
+    cout << "희망하는 옵션을 선택해주세요.\n" << endl;
     cout << "1. 음료 구매하기" << endl;
-    cout << "2. 선결제 한 음료 받아 가기\n"
-         << endl;
-    cout << "Enter menu : ";
+    cout << "2. 선결제 한 음료 받아 가기\n" << endl;
+
     int choice;
-    cin >> choice;
-    return choice;
+    while (true)
+    {
+        cout << "Enter menu : ";
+        if (cin >> choice)
+        {
+            if (choice < 1 || choice > 2) {
+                cout << "옵션을 잘못 입력하셨습니다. 다시 입력해주세요.\n" << endl;
+                continue;
+            }
+            return choice;
+        }
+        else
+        {
+            // 입력 스트림 정리
+            cin.clear();
+            cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            cout << "옵션을 잘못 입력하셨습니다. 다시 입력해주세요.\n";
+        }
+    }
 }
 
 void Controller::handleMenuSelection(int choice)
@@ -185,11 +199,22 @@ void Controller::handleBeverageSelection()
         {
             cout << "\n현재 해당 자판기에서 구매가 불가합니다.\n";
             cout << "(" << x << ", " << y << ") 위치의 자판기에서 구매가 가능합니다.\n" << endl;
-            // cout << "음료 가격 총 " << total_price << "원 (" << item_name << " " << countParsed << "개 ";
-            //cout << total_price / count << "원 * " << count << ")" << endl;
             try {
                 pair<Location, string> response = dvm->requestOrder(stoi(target), request);
-                cout << "\n결제가 완료되었습니다." << endl;
+                Card card("");
+                if (!card.processPayment(total_price)) {
+                    cout << "결제에 실패하였습니다. 메인 화면으로 돌아갑니다.\n";
+                    cout << "계속하려면 Enter를 누르세요..." << endl;
+                    cin.ignore();
+                    cin.get();
+                    return;
+                }
+                Location loc = response.first;
+                string certCode = response.second;
+                cout << "=====================" << endl;
+                cout << "자판기 위치 : (" << loc.getX() << ", " << loc.getY() << ")" << endl;
+                cout << "인증코드 : " << certCode << endl;
+                cout << "=====================" << endl; 
             } catch (const std::exception& e) {
                 cout << "[ERROR] 주문 처리 중 문제가 발생했습니다: " << e.what() << endl;
             }
@@ -203,8 +228,16 @@ void Controller::handleBeverageSelection()
         {
             cout << "음료 가격 총 " << total_price << "원 (" << item_name << " " << countParsed << "개 ";
             cout << total_price / count << "원 * " << count << ")" << endl;
+            Card card("");
+            if (!card.processPayment(total_price)) {
+                cout << "결제에 실패하였습니다. 메인 화면으로 돌아갑니다.\n";
+                cout << "계속하려면 Enter를 누르세요..." << endl;
+                cin.ignore();
+                cin.get();
+                return;
+            }
+            card.~Card();
             dvm->requestOrder(request);
-            cout << "\n결제가 완료되었습니다." << endl;
             cout << "\n메인 화면으로 돌아갑니다." << endl;
             cout << "계속하려면 Enter를 누르세요..." << endl;
             cin.ignore();

@@ -35,9 +35,6 @@ string DVM::queryItems() {
 }
 
 string DVM::queryStocks(string itemCode, int count) {
-    for (const auto& [item, count] : stocks) {
-        std::cout << "[DEBUG] Stock item: " << item.getItemCode() << " / name: " << item.getName() << " / count: " << count << "\n";
-    }
     ostringstream oss;
     auto it = stocks.find(Item(itemCode, "", 0));
     
@@ -57,8 +54,6 @@ string DVM::queryStocks(string itemCode, int count) {
         for (auto& dvm : dvms) {
             CheckStockRequest request{.item_code = itemCode, .item_num = count};
             CheckStockResponse response = dvm.findAvailableStocks(request, dvmId);
-            cout << response.item_code << endl;
-            cout << response.dst_id << endl;
             if (response.item_num > 0) {
                 int distance = location.calculateDistance(dvm.getLocation());
                 if (distance < shortestDistance) {
@@ -95,9 +90,9 @@ void DVM::requestOrder(SaleRequest request) {
 }
 
 pair<Location, string> DVM::requestOrder(int targetDvmId, SaleRequest request) {
-    string certcode = " ";
     for (auto& dvm : dvms) {
         if (dvm.getDvmId() == targetDvmId) {
+            auto [sale, certcode] = Sale::createSaleForDvm(request, targetDvmId);
             askPrepaymentRequest askRequest{
                 .item_code = request.itemCode,
                 .item_num = request.itemNum,
@@ -107,7 +102,6 @@ pair<Location, string> DVM::requestOrder(int targetDvmId, SaleRequest request) {
             if (!response.availability) {
                 throw runtime_error("Prepayment not available");
             }
-            auto [sale, certcode] = Sale::createSaleForDvm(request, targetDvmId);
             return make_pair(dvm.getLocation(), certcode);
         }
     }

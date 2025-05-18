@@ -1,6 +1,7 @@
 #include <string>
 #include <sstream> 
 #include <map>
+#include <memory>
 #include "domain/item.h"
 
 using namespace std;
@@ -11,7 +12,7 @@ using namespace std;
 
 struct Config
 {
-    const char* target_ip = "172.30.1.12";
+    const char* target_ip = "192.168.0.100";
     int port = 9000;
     static Config &get()
     {
