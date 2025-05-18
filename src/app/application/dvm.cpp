@@ -22,8 +22,14 @@ Item DVM::findItem(const string& itemCode) const {
 
 string DVM::queryItems() {
     ostringstream oss;
-    for (const auto& item : items) {
-        oss << item.printItem() << "\n"; 
+    for (const auto& [code, name] : ItemDictionary::get()) {
+        Item item(code, name, 0);
+        auto it = stocks.find(item);
+        if (it != stocks.end()) {
+            oss << it->first.printItem() << "\n";
+        } else {
+            oss << item.printItem() << "\n";
+        }
     }
     return oss.str();
 }
@@ -33,7 +39,7 @@ string DVM::queryStocks(string itemCode, int count) {
     auto it = stocks.find(Item(itemCode, "", 0));
     
     if (it != stocks.end() && it->second >= count) {
-        Item item = it->first;
+        Item item = findItem(itemCode);  // 정확한 가격과 이름 가진 item을 리턴
         int totalPrice = item.calculatePrice(count);
         // flag:this;item_code:xxx;total_price:xxx;item_name:xxx;count:xxx 형식으로 반환
         oss << "flag:this;"
@@ -84,14 +90,9 @@ void DVM::requestOrder(SaleRequest request) {
 }
 
 pair<Location, string> DVM::requestOrder(int targetDvmId, SaleRequest request) {
-    Item item = findItem(request.itemCode);
-    request.item = item;
-    decreaseStock(request.itemCode, request.itemNum);
-    auto [sale, certcode] = Sale::createSaleForDvm(request, targetDvmId);
-    sales.push_back(sale);
-
     for (auto& dvm : dvms) {
         if (dvm.getDvmId() == targetDvmId) {
+            auto [sale, certcode] = Sale::createSaleForDvm(request, targetDvmId);
             askPrepaymentRequest askRequest{
                 .item_code = request.itemCode,
                 .item_num = request.itemNum,
@@ -127,4 +128,14 @@ bool DVM::processPrepaidItem(string certCode) {
         }
     }
     return false;
+}
+
+Location DVM::getLocation() const{
+    return location;
+}
+const map<Item, int>& DVM::getStocks() const{
+    return stocks;
+}
+const int DVM::getDvmId() const{
+    return dvmId;
 }

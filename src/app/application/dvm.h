@@ -50,6 +50,11 @@ public:
     
     // 선결제된 아이템 처리
     bool processPrepaidItem(string certCode);
+
+    // getter 추가
+    Location getLocation() const;
+    const map<Item, int>& getStocks() const;
+    const int getDvmId() const;
 };
 
 #endif // DVM_H

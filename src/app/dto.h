@@ -1,6 +1,7 @@
 #include <string>
 #include <sstream> 
 #include <map>
+#include <vector>
 #include "domain/item.h"
 
 using namespace std;
@@ -10,12 +11,28 @@ using namespace std;
 
 struct Config
 {
-    const char* target_ip = "127.0.0.1";
+    const char* target_ip = "192.168.0.100";
     int port = 9000;
     static Config &get()
     {
         static Config instance;
         return instance;
+    }
+    void setPort(int newPort)
+    {
+        port = newPort;
+    }
+};
+
+struct ItemDictionary {
+    static const vector<pair<string, string>>& get() {
+        static const vector<pair<string, string>> itemData = {
+            {"01", "콜라"}, {"02", "사이다"}, {"03", "녹차"}, {"04", "홍차"}, {"05", "밀크티"},
+            {"06", "탄산수"}, {"07", "보리차"}, {"08", "캔커피"}, {"09", "물"}, {"10", "에너지드링크"},
+            {"11", "유자차"}, {"12", "식혜"}, {"13", "아이스티"}, {"14", "딸기주스"}, {"15", "오렌지주스"},
+            {"16", "포도주스"}, {"17", "이온음료"}, {"18", "아메리카노"}, {"19", "핫초코"}, {"20", "카페라떼"}
+        };
+        return itemData;
     }
 };
 

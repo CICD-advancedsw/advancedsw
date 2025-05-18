@@ -1,7 +1,8 @@
+#include <fstream>
 #include "otherdvm.h"
 
-OtherDVM::OtherDVM(int id, const Location &loc)
-    : dvmId(id), location(loc), targetIp(Config::get().target_ip), port(Config::get().port) {}
+OtherDVM::OtherDVM(int id, const Location &loc, const char* targetIp, const int port)
+    : dvmId(id), location(loc), targetIp(targetIp), port(port) {}
 
 bool OtherDVM::establishConnection(int &sock) const {
     sock = socket(AF_INET, SOCK_STREAM, 0);
@@ -27,10 +28,20 @@ bool OtherDVM::establishConnection(int &sock) const {
 //재고 확인 요청
 CheckStockResponse OtherDVM::findAvailableStocks(const CheckStockRequest &request, int senderDvmId)
 {
+    static ofstream logFile("client_log.txt", ios::app);
+    if (!logFile) {
+        cerr << "⚠️ client_log.txt 열기 실패\n";
+    }
+
     int sock;
     if (!establishConnection(sock)) {
         return {};
     }
+
+    struct timeval timeout;
+    timeout.tv_sec = 2;
+    timeout.tv_usec = 0;
+    setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout));
 
     SocketMessage msg;
     msg.msg_type = "req_stock";
@@ -42,28 +53,52 @@ CheckStockResponse OtherDVM::findAvailableStocks(const CheckStockRequest &reques
     string requestStr = msg.serialize();
     send(sock, requestStr.c_str(), requestStr.size(), 0);
 
-    char buffer[1024] = {0};
+    char buffer[4096] = {0};
     int bytesRead = recv(sock, buffer, sizeof(buffer), 0);
     close(sock);
 
     if (bytesRead <= 0)
     {
-        cerr << "Failed to receive response\n";
+        static int warnCount = 0;
+        if (warnCount++ < 3) {
+            logFile << "[CLIENT] Warning: Failed to receive response (count " << warnCount << ")" << std::endl;
+        }
+        logFile.flush();
         return {};
     }
 
+    logFile << "[CLIENT] Raw response: " << buffer << std::endl;
+
     SocketMessage resp = SocketMessage::deserialize(buffer);
+
+    logFile << "[CLIENT] Parsed item_code: " << resp.msg_content["item_code"] << std::endl;
+    logFile << "[CLIENT] Parsed item_num: " << resp.msg_content["item_num"] << std::endl;
+
+    int item_num = 0;
+    int coor_x = 0;
+    int coor_y = 0;
+    try {
+        item_num = stoi(resp.msg_content["item_num"]);
+        coor_x = stoi(resp.msg_content["coor_x"]);
+        coor_y = stoi(resp.msg_content["coor_y"]);
+    } catch (const std::exception& e) {
+        logFile << "[CLIENT] stoi failed: " << e.what() << std::endl;
+    }
+    logFile.flush();
+
     return CheckStockResponse{
         .dst_id = stoi(resp.dst_id.substr(1)),
         .item_code = resp.msg_content["item_code"],
-        .item_num = stoi(resp.msg_content["item_num"]),
-        .coor_x = stoi(resp.msg_content["coor_x"]),
-        .coor_y = stoi(resp.msg_content["coor_y"])};
+        .item_num = item_num,
+        .coor_x = coor_x,
+        .coor_y = coor_y};
 }
 
 //선결제 요청
 askPrepaymentResponse OtherDVM::askForPrepayment(const askPrepaymentRequest &request, int senderDvmId)
 {
+    static ofstream logFile("client_log.txt", ios::app);
+
     int sock;
     if (!establishConnection(sock)) {
         return {};
@@ -80,13 +115,13 @@ askPrepaymentResponse OtherDVM::askForPrepayment(const askPrepaymentRequest &req
     string requestStr = msg.serialize();
     send(sock, requestStr.c_str(), requestStr.size(), 0);
 
-    char buffer[1024] = {0};
+    char buffer[4096] = {0};
     int bytesRead = recv(sock, buffer, sizeof(buffer), 0);
     close(sock);
 
     if (bytesRead <= 0)
     {
-        cerr << "Failed to receive response\n";
+        logFile << "Failed to receive response\n";
         return {};
     }
 

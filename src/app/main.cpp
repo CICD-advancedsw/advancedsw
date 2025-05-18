@@ -11,12 +11,12 @@ using namespace std;
 
 int main()
 {
+  Config::get().setPort(9000);
   Location loc(1, 2);
 
   // 더미 OtherDVM 리스트
   list<OtherDVM> otherDvms;
-  otherDvms.emplace_back(2, Location(3, 4));
-  otherDvms.emplace_back(3, Location(5, 6));
+  otherDvms.emplace_back(2, Location(3, 4), Config::get().target_ip, 9001);
 
   // 더미 Item 리스트
   std::list<Item> itemList;
