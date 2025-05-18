@@ -1,14 +1,13 @@
 #include <string>
 #include <sstream> 
 #include <map>
-#include <memory>
+#include <vector>
 #include "domain/item.h"
 
 using namespace std;
 
 #ifndef DTO_H
 #define DTO_H
-
 
 struct Config
 {
