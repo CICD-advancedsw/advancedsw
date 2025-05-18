@@ -20,13 +20,12 @@ class OtherDVM
 private:
     int dvmId;
     Location location;
-
     // 추가
     const char* targetIp;
     int port;
     bool establishConnection(int &sock) const;
 public:
-    OtherDVM(int id, const Location &loc);
+    OtherDVM(int id, const Location &loc, const char* targetIp, const int port);
     CheckStockResponse findAvailableStocks(const CheckStockRequest &request,int senderDvmId);
     askPrepaymentResponse askForPrepayment(const askPrepaymentRequest &request, int senderDvmId);
     const Location &getLocation() const;
