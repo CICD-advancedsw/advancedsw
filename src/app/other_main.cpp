@@ -1,6 +1,4 @@
-﻿
-
-#include <iostream>
+﻿#include <iostream>
 #include <thread>
 #include "application/otherdvm.h"
 #include "application/sale.h"
@@ -18,7 +16,7 @@ int main()
 
     // 더미 OtherDVM 리스트
     list<OtherDVM> otherDvms;
-    otherDvms.emplace_back(1, Location(1, 2), "127.0.0.1", 9000);
+    otherDvms.emplace_back(1, Location(1, 2), Config::get().target_ip, 9000);
 
     // 더미 Item 리스트
     std::list<Item> itemList;

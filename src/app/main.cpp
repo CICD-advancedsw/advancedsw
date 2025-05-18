@@ -16,7 +16,7 @@ int main()
 
   // 더미 OtherDVM 리스트
   list<OtherDVM> otherDvms;
-  otherDvms.emplace_back(2, Location(3, 4), "127.0.0.1", 9001);
+  otherDvms.emplace_back(2, Location(3, 4), Config::get().target_ip, 9001);
 
   // 더미 Item 리스트
   std::list<Item> itemList;
