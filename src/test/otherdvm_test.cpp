@@ -17,7 +17,7 @@ using ::testing::Invoke;
 // OtherDVM을 테스트하기 위한 모의 클래스
 class MockOtherDVM : public OtherDVM {
 public:
-    MockOtherDVM(int id, const Location &loc) : OtherDVM(id, loc) {}
+    MockOtherDVM(int id, const Location &loc) : OtherDVM(id, loc, "127.0.0.1", 9000) {}
 
     MOCK_METHOD(CheckStockResponse, findAvailableStocks, (const CheckStockRequest& request, int senderDvmId));
     MOCK_METHOD(askPrepaymentResponse, askForPrepayment, (const askPrepaymentRequest& request, int senderDvmId));
@@ -55,7 +55,7 @@ protected:
     MockOtherDVM* mockOtherDVM;
     
     virtual void SetUp() override {
-        otherDVM = new OtherDVM(2, Location(10, 20));
+        otherDVM = new OtherDVM(2, Location(10, 20), "127.0.0.1", 9000);
         mockOtherDVM = new MockOtherDVM(3, Location(30, 40));
     }
     
@@ -76,7 +76,7 @@ TEST_F(OtherDVMTest, GetLocation_ReturnsSavedLocation) {
 
 // TC-DIST-001: 위치 정보 - 원점 테스트
 TEST_F(OtherDVMTest, GetLocation_OriginLocation) {
-    OtherDVM originDVM(3, Location(0, 0));
+    OtherDVM originDVM(3, Location(0, 0), "127.0.0.1", 9000);
     Location loc = originDVM.getLocation();
     
     EXPECT_EQ(loc.getX(), 0);
@@ -85,7 +85,7 @@ TEST_F(OtherDVMTest, GetLocation_OriginLocation) {
 
 // TC-DIST-001: 위치 정보 - 음수 좌표 테스트
 TEST_F(OtherDVMTest, GetLocation_NegativeCoordinates) {
-    OtherDVM negativeDVM(4, Location(-10, -20));
+    OtherDVM negativeDVM(4, Location(-10, -20), "127.0.0.1", 9000);
     Location loc = negativeDVM.getLocation();
     
     EXPECT_EQ(loc.getX(), -10);
@@ -94,7 +94,7 @@ TEST_F(OtherDVMTest, GetLocation_NegativeCoordinates) {
 
 // TC-DIST-001: 위치 정보 - X 좌표만 음수
 TEST_F(OtherDVMTest, GetLocation_NegativeXCoordinate) {
-    OtherDVM mixedDVM(5, Location(-10, 20));
+    OtherDVM mixedDVM(5, Location(-10, 20), "127.0.0.1", 9000);
     Location loc = mixedDVM.getLocation();
     
     EXPECT_EQ(loc.getX(), -10);
@@ -103,7 +103,7 @@ TEST_F(OtherDVMTest, GetLocation_NegativeXCoordinate) {
 
 // TC-DIST-001: 위치 정보 - Y 좌표만 음수
 TEST_F(OtherDVMTest, GetLocation_NegativeYCoordinate) {
-    OtherDVM mixedDVM(6, Location(10, -20));
+    OtherDVM mixedDVM(6, Location(10, -20), "127.0.0.1", 9000);
     Location loc = mixedDVM.getLocation();
     
     EXPECT_EQ(loc.getX(), 10);
@@ -112,7 +112,7 @@ TEST_F(OtherDVMTest, GetLocation_NegativeYCoordinate) {
 
 // TC-DIST-001: 위치 정보 - 최대값 테스트
 TEST_F(OtherDVMTest, GetLocation_MaxCoordinates) {
-    OtherDVM maxDVM(7, Location(INT_MAX, INT_MAX));
+    OtherDVM maxDVM(7, Location(INT_MAX, INT_MAX), "127.0.0.1", 9000);
     Location loc = maxDVM.getLocation();
     
     EXPECT_EQ(loc.getX(), INT_MAX);
@@ -121,7 +121,7 @@ TEST_F(OtherDVMTest, GetLocation_MaxCoordinates) {
 
 // TC-DIST-001: 위치 정보 - 최소값 테스트
 TEST_F(OtherDVMTest, GetLocation_MinCoordinates) {
-    OtherDVM minDVM(8, Location(INT_MIN, INT_MIN));
+    OtherDVM minDVM(8, Location(INT_MIN, INT_MIN), "127.0.0.1", 9000);
     Location loc = minDVM.getLocation();
     
     EXPECT_EQ(loc.getX(), INT_MIN);
@@ -130,8 +130,8 @@ TEST_F(OtherDVMTest, GetLocation_MinCoordinates) {
 
 // TC-DIST-003: 거리 계산 테스트 (간접)
 TEST_F(OtherDVMTest, CalculateDistance_FromOrigin) {
-    OtherDVM originDVM(9, Location(0, 0));
-    OtherDVM targetDVM(10, Location(3, 4));
+    OtherDVM originDVM(9, Location(0, 0), "127.0.0.1", 9000);
+    OtherDVM targetDVM(10, Location(3, 4), "127.0.0.1", 9000);
     
     // 맨해튼 거리 |x2-x1| + |y2-y1| = |3-0| + |4-0| = 3 + 4 = 7
     int distance = originDVM.getLocation().calculateDistance(targetDVM.getLocation());
@@ -140,8 +140,8 @@ TEST_F(OtherDVMTest, CalculateDistance_FromOrigin) {
 
 // TC-DIST-003: 거리 계산 테스트 - 음수 좌표 포함
 TEST_F(OtherDVMTest, CalculateDistance_WithNegativeCoordinates) {
-    OtherDVM dvm1(11, Location(-5, -10));
-    OtherDVM dvm2(12, Location(5, 10));
+    OtherDVM dvm1(11, Location(-5, -10), "127.0.0.1", 9000);
+    OtherDVM dvm2(12, Location(5, 10), "127.0.0.1", 9000);
     
     // 맨해튼 거리 |x2-x1| + |y2-y1| = |5-(-5)| + |10-(-10)| = 10 + 20 = 30
     int distance = dvm1.getLocation().calculateDistance(dvm2.getLocation());
@@ -150,8 +150,8 @@ TEST_F(OtherDVMTest, CalculateDistance_WithNegativeCoordinates) {
 
 // TC-DIST-003: 거리 계산 테스트 - 동일 위치
 TEST_F(OtherDVMTest, CalculateDistance_SameLocation) {
-    OtherDVM dvm1(13, Location(10, 20));
-    OtherDVM dvm2(14, Location(10, 20));
+    OtherDVM dvm1(13, Location(10, 20), "127.0.0.1", 9000);
+    OtherDVM dvm2(14, Location(10, 20), "127.0.0.1", 9000);
     
     int distance = dvm1.getLocation().calculateDistance(dvm2.getLocation());
     EXPECT_EQ(distance, 0);
@@ -159,8 +159,8 @@ TEST_F(OtherDVMTest, CalculateDistance_SameLocation) {
 
 // TC-DIST-003: 거리 계산 테스트 - X 좌표만 다름
 TEST_F(OtherDVMTest, CalculateDistance_DifferentXOnly) {
-    OtherDVM dvm1(15, Location(10, 20));
-    OtherDVM dvm2(16, Location(30, 20));
+    OtherDVM dvm1(15, Location(10, 20), "127.0.0.1", 9000);
+    OtherDVM dvm2(16, Location(30, 20), "127.0.0.1", 9000);
     
     int distance = dvm1.getLocation().calculateDistance(dvm2.getLocation());
     EXPECT_EQ(distance, 20);
@@ -168,8 +168,8 @@ TEST_F(OtherDVMTest, CalculateDistance_DifferentXOnly) {
 
 // TC-DIST-003: 거리 계산 테스트 - Y 좌표만 다름
 TEST_F(OtherDVMTest, CalculateDistance_DifferentYOnly) {
-    OtherDVM dvm1(17, Location(10, 20));
-    OtherDVM dvm2(18, Location(10, 50));
+    OtherDVM dvm1(17, Location(10, 20), "127.0.0.1", 9000);
+    OtherDVM dvm2(18, Location(10, 50), "127.0.0.1", 9000);
     
     int distance = dvm1.getLocation().calculateDistance(dvm2.getLocation());
     EXPECT_EQ(distance, 30);
@@ -182,25 +182,25 @@ TEST_F(OtherDVMTest, GetDvmId_ReturnsSavedId) {
 
 // TC-DIST-001: DVM ID - 음수 ID 테스트
 TEST_F(OtherDVMTest, GetDvmId_NegativeId) {
-    OtherDVM negativeDVM(-3, Location(0, 0));
+    OtherDVM negativeDVM(-3, Location(0, 0), "127.0.0.1", 9000);
     EXPECT_EQ(negativeDVM.getDvmId(), -3);
 }
 
 // TC-DIST-001: DVM ID - 0 ID 테스트
 TEST_F(OtherDVMTest, GetDvmId_ZeroId) {
-    OtherDVM zeroDVM(0, Location(0, 0));
+    OtherDVM zeroDVM(0, Location(0, 0), "127.0.0.1", 9000);
     EXPECT_EQ(zeroDVM.getDvmId(), 0);
 }
 
 // TC-DIST-001: DVM ID - 최대값 ID 테스트
 TEST_F(OtherDVMTest, GetDvmId_MaxId) {
-    OtherDVM maxDVM(INT_MAX, Location(0, 0));
+    OtherDVM maxDVM(INT_MAX, Location(0, 0), "127.0.0.1", 9000);
     EXPECT_EQ(maxDVM.getDvmId(), INT_MAX);
 }
 
 // TC-DIST-001: DVM ID - 최소값 ID 테스트
 TEST_F(OtherDVMTest, GetDvmId_MinId) {
-    OtherDVM minDVM(INT_MIN, Location(0, 0));
+    OtherDVM minDVM(INT_MIN, Location(0, 0), "127.0.0.1", 9000);
     EXPECT_EQ(minDVM.getDvmId(), INT_MIN);
 }
 
@@ -425,9 +425,9 @@ TEST_F(OtherDVMTest, AskForPrepayment_MockByQuantity) {
 
 // TC-DIST-001: 여러 인스턴스 생성 및 속성 비교
 TEST_F(OtherDVMTest, MultipleInstances) {
-    OtherDVM dvm1(1, Location(5, 5));
-    OtherDVM dvm2(2, Location(10, 10));
-    OtherDVM dvm3(3, Location(15, 15));
+    OtherDVM dvm1(1, Location(5, 5), "127.0.0.1", 9000);
+    OtherDVM dvm2(2, Location(10, 10), "127.0.0.1", 9000);
+    OtherDVM dvm3(3, Location(15, 15), "127.0.0.1", 9000);
     
     // ID 검증
     EXPECT_EQ(dvm1.getDvmId(), 1);
@@ -449,11 +449,11 @@ TEST_F(OtherDVMTest, MultipleInstances) {
 TEST_F(OtherDVMTest, EqualDistance_LowerIdPriority) {
     // 두 DVM이 동일한 거리에 있을 때 ID가 낮은 것을 선택하는지 확인
     // 중심점에서 동일한 거리에 있는 두 DVM
-    OtherDVM dvm1(1, Location(5, 0));  // 거리: |5-0| + |0-0| = 5
-    OtherDVM dvm2(2, Location(0, 5));  // 거리: |0-0| + |5-0| = 5
+    OtherDVM dvm1(1, Location(5, 0), "127.0.0.1", 9000);  // 거리: |5-0| + |0-0| = 5
+    OtherDVM dvm2(2, Location(0, 5), "127.0.0.1", 9000);  // 거리: |0-0| + |5-0| = 5
     
     // 중심점으로부터의 거리가 같음을 확인
-    OtherDVM centerDVM(0, Location(0, 0));
+    OtherDVM centerDVM(0, Location(0, 0), "127.0.0.1", 9000);
     EXPECT_EQ(centerDVM.getLocation().calculateDistance(dvm1.getLocation()), 5);
     EXPECT_EQ(centerDVM.getLocation().calculateDistance(dvm2.getLocation()), 5);
     
@@ -559,9 +559,9 @@ TEST_F(OtherDVMTest, CertificationCodeLength) {
 // TC-PRE-004: 근접 자판기 안내 테스트 (간접)
 TEST_F(OtherDVMTest, GuideToNearestVendingMachine) {
     // otherDVM은 Location(10, 20)에 위치
-    OtherDVM dvm1(101, Location(10, 10));    // 거리: |10-10| + |10-20| = 0 + 10 = 10
-    OtherDVM dvm2(102, Location(20, 20));    // 거리: |20-10| + |20-20| = 10 + 0 = 10
-    OtherDVM dvm3(103, Location(30, 30));    // 거리: |30-10| + |30-20| = 20 + 10 = 30
+    OtherDVM dvm1(101, Location(10, 10), "127.0.0.1", 9000);    // 거리: |10-10| + |10-20| = 0 + 10 = 10
+    OtherDVM dvm2(102, Location(20, 20), "127.0.0.1", 9000);    // 거리: |20-10| + |20-20| = 10 + 0 = 10
+    OtherDVM dvm3(103, Location(30, 30), "127.0.0.1", 9000);    // 거리: |30-10| + |30-20| = 20 + 10 = 30
     
     // 테스트 대상 DVM으로부터의 거리 계산
     int distance1 = otherDVM->getLocation().calculateDistance(dvm1.getLocation());

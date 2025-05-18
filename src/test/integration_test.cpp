@@ -57,8 +57,8 @@ protected:
         stockList[Item("07", "이온음료", 1300)] = 8;
         
         // 기타 DVM 생성 - 실제 OtherDVM 객체 사용
-        otherDvms.push_back(OtherDVM(2, Location(10, 20)));
-        otherDvms.push_back(OtherDVM(3, Location(30, 40)));
+        otherDvms.push_back(OtherDVM(2, Location(10, 20), "127.0.0.1", 9000));
+        otherDvms.push_back(OtherDVM(3, Location(30, 40), "127.0.0.1", 9000));
         
         // 주 DVM 생성
         dvm = std::make_unique<DVM>(1, Location(0, 0), stockList, items, sales, otherDvms);

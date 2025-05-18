@@ -4,7 +4,7 @@
 #include <climits>
 #include <vector>
 #include <string>
-#include "../app/domain/card.h"
+#include "../app/external/card.h"
 #include "../app/domain/certificationcode.h"
 #include "../app/domain/item.h"
 #include "../app/domain/location.h"
