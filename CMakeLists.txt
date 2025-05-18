@@ -19,6 +19,7 @@ file(GLOB APP_SOURCES_NO_MAIN
     src/app/application/*.cpp
     src/app/presentation/*.cpp
     src/app/exception/*.cpp
+    src/app/external/*.cpp
 )
 
 # 메인 프로그램

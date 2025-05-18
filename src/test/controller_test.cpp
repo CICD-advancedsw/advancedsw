@@ -206,7 +206,7 @@ TEST_F(ControllerTest, HandleCheckStockRequest_ShouldIncludeMessageType) {
 TEST_F(ControllerTest, HandleCheckStockRequest_ShouldIncludeSourceId) {
     string request = "msg_type:req_stock;item_code:001;item_num:2;src_id:2;";
     string response = controller->testHandleCheckStockRequest(request);
-    EXPECT_NE(response.find("src_id:1"), string::npos);
+    EXPECT_NE(response.find("src_id:T1"), string::npos);
 }
 
 TEST_F(ControllerTest, HandleCheckStockRequest_ShouldIncludeDestinationId) {

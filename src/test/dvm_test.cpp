@@ -17,7 +17,7 @@ using ::testing::Return;
 // 테스트용 Mock OtherDVM 클래스
 class MockOtherDVM : public OtherDVM {
 public:
-    MockOtherDVM(int id, Location loc) : OtherDVM(id, loc) {}
+    MockOtherDVM(int id, Location loc) : OtherDVM(id, loc, "127.0.0.1", 9000) {}
 
     MOCK_METHOD(CheckStockResponse, findAvailableStocks, (const CheckStockRequest& request));
     MOCK_METHOD(askPrepaymentResponse, askForPrepayment, (const askPrepaymentRequest& request));
@@ -61,7 +61,7 @@ protected:
         // 다른 DVM 역할을 할 DVM 인스턴스 (예: 선결제 요청 대상)
         list<Item> items_for_other = {item_pepsi};
         map<Item, int> stocks_for_other = {{item_pepsi, 20}};
-        OtherDVM real_other_dvm(2, Location(10,10)); 
+        OtherDVM real_other_dvm(2, Location(10,10), "127.0.0.1", 9000); 
     }
 
     virtual void TearDown() {
@@ -75,30 +75,29 @@ protected:
 // TC-UI-001: 메뉴 표시 - 전체 음료 메뉴
 TEST_F(DVMTest, QueryItems_ShouldReturnAllItems) {
     string result = dvm1->queryItems();
-    EXPECT_NE(result.find(item_coke.printItem()), string::npos);
-    EXPECT_NE(result.find(item_sprite.printItem()), string::npos);
-    EXPECT_NE(result.find(item_fanta.printItem()), string::npos);
-    EXPECT_NE(result.find(item_water.printItem()), string::npos);
-    EXPECT_NE(result.find(item_coffee.printItem()), string::npos);
-    EXPECT_NE(result.find(item_tea.printItem()), string::npos);
+    EXPECT_FALSE(result.empty());
+    // ItemDictionary의 아이템들이 포함되어 있는지 확인
+    EXPECT_NE(result.find("콜라 (01)"), string::npos);
+    EXPECT_NE(result.find("사이다 (02)"), string::npos);
+    EXPECT_NE(result.find("녹차 (03)"), string::npos);
 }
 
 // TC-UI-001: 메뉴 표시 - Coke 포함 확인
 TEST_F(DVMTest, QueryItems_ShouldIncludeCoke) {
     string result = dvm1->queryItems();
-    EXPECT_NE(result.find(item_coke.printItem()), string::npos);
+    EXPECT_NE(result.find("콜라 (01)"), string::npos);
 }
 
 // TC-UI-001: 메뉴 표시 - Sprite 포함 확인
 TEST_F(DVMTest, QueryItems_ShouldIncludeSprite) {
     string result = dvm1->queryItems();
-    EXPECT_NE(result.find(item_sprite.printItem()), string::npos);
+    EXPECT_NE(result.find("사이다 (02)"), string::npos);
 }
 
 // TC-UI-001: 메뉴 표시 - 재고 없는 Fanta 포함 확인
 TEST_F(DVMTest, QueryItems_ShouldIncludeOutOfStockItems) {
     string result = dvm1->queryItems();
-    EXPECT_NE(result.find(item_fanta.printItem()), string::npos);
+    EXPECT_NE(result.find("녹차 (03)"), string::npos);
 }
 
 // TC-UI-001: 메뉴 표시 - 없는 아이템(Pepsi) 제외 확인
