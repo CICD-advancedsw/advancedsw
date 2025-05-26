@@ -57,29 +57,33 @@ make
 
 2. Run main application:
 
-#### 명령행 인수로 설정 지정
+#### 명령행 인수로 다른 DVM 설정 지정
 ```bash
-# 기본 설정으로 실행
+# 기본 설정으로 실행 (다른 DVM 없이)
 ./build/app_program
 
-# 사용법: ./app_program [내_포트] [다른_DVM_IP] [다른_DVM_포트]
-./build/app_program 9000 172.20.10.2 9001
-./build/app_program 9002 192.168.1.100 9003
+# 다른 DVM 하나와 연결
+./build/app_program 172.20.10.2:9001
 
-# 도움말 보기
-./build/app_program --help
+# 여러 DVM과 연결
+./build/app_program 172.20.10.2:9001 192.168.1.100:9002
+
+# 사용법: ./app_program [다른_DVM_IP:PORT] [다른_DVM_IP:PORT] ...
+# 주의: 자신의 포트는 9000으로 고정되어 있습니다.
 ```
 
 ### 다중 DVM 실행 예시
 
-여러 DVM을 동시에 실행하려면 각각 다른 포트를 사용해야 합니다:
+여러 DVM을 동시에 실행하려면 각각 다른 포트를 사용해야 합니다.
+**현재 버전에서는 자신의 포트가 9000으로 하드코딩되어 있으므로, 여러 DVM을 같은 머신에서 실행할 수 없습니다.**
 
+다른 머신에서 실행하는 예시:
 ```bash
-# 터미널 1: 첫 번째 DVM (포트 9000)
-./build/app_program 9000 172.20.10.2 9001
+# 머신 1 (IP: 172.20.10.2): 첫 번째 DVM
+./build/app_program 192.168.1.100:9000
 
-# 터미널 2: 두 번째 DVM (포트 9001)
-./build/app_program 9001 172.20.10.2 9000
+# 머신 2 (IP: 192.168.1.100): 두 번째 DVM  
+./build/app_program 172.20.10.2:9000
 ```
 
 3. Run individual test suites:
