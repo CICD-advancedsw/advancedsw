@@ -1,5 +1,7 @@
 # advancedsw
 
+분산 자판기 시스템 (Distributed Vending Machine System)
+
 test test github test kyunghee modified
 test on 20250503
 more test using push
@@ -54,8 +56,30 @@ make
 ```
 
 2. Run main application:
+
+#### 명령행 인수로 설정 지정
 ```bash
-./app_program
+# 기본 설정으로 실행
+./build/app_program
+
+# 사용법: ./app_program [내_포트] [다른_DVM_IP] [다른_DVM_포트]
+./build/app_program 9000 172.20.10.2 9001
+./build/app_program 9002 192.168.1.100 9003
+
+# 도움말 보기
+./build/app_program --help
+```
+
+### 다중 DVM 실행 예시
+
+여러 DVM을 동시에 실행하려면 각각 다른 포트를 사용해야 합니다:
+
+```bash
+# 터미널 1: 첫 번째 DVM (포트 9000)
+./build/app_program 9000 172.20.10.2 9001
+
+# 터미널 2: 두 번째 DVM (포트 9001)
+./build/app_program 9001 172.20.10.2 9000
 ```
 
 3. Run individual test suites:
@@ -82,5 +106,4 @@ make
 All test executables support Google Test command line options. For more detailed test output, you can use:
 ```bash
 ./[test_name] --gtest_color=yes --gtest_print_time=1
-```
 ```

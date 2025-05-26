@@ -11,13 +11,15 @@ using namespace std;
 
 struct Config
 {
-    const char* target_ip = "192.168.0.100";
-    int port = 9000;
+    const char* target_ip = "172.20.10.2";
+    int port = 9001;
+    
     static Config &get()
     {
         static Config instance;
         return instance;
     }
+    
     void setPort(int newPort)
     {
         port = newPort;
