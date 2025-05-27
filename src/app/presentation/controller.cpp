@@ -1,7 +1,8 @@
 ﻿#include "controller.h"
 #include <fstream>
 
-Controller::Controller(DVM *dvm) : dvm(dvm), location(dvm->getLocation()), stocks(dvm->getStocks()), dvmId(dvm->getDvmId()) {
+Controller::Controller(DVM *dvm) : dvm(dvm), location(dvm->getLocation()), stocks(dvm->getStocks()), dvmId(dvm->getDvmId())
+{
 }
 
 Controller::~Controller() {}
@@ -95,7 +96,8 @@ void Controller::runServer()
 
             logFile << "[SERVER] Response generated: " << response << std::endl;
             ssize_t sent = ::send(client_fd, response.c_str(), response.size(), 0);
-            if (sent < 0) {
+            if (sent < 0)
+            {
                 logFile << "[SERVER] Send failed" << std::endl;
             }
             // ::send(client_fd, response.c_str(), response.size(), 0);
@@ -109,10 +111,13 @@ void Controller::runServer()
 
 int Controller::displayMenu()
 {
-    cout << "\n안녕하세요, Team1 DVM 입니다.\n" << endl;
-    cout << "희망하는 옵션을 선택해주세요.\n" << endl;
+    cout << "\n안녕하세요, Team1 DVM 입니다.\n"
+         << endl;
+    cout << "희망하는 옵션을 선택해주세요.\n"
+         << endl;
     cout << "1. 음료 구매하기" << endl;
-    cout << "2. 선결제 한 음료 받아 가기\n" << endl;
+    cout << "2. 선결제 한 음료 받아 가기\n"
+         << endl;
 
     int choice;
     while (true)
@@ -120,8 +125,14 @@ int Controller::displayMenu()
         cout << "Enter menu : ";
         if (cin >> choice)
         {
-            if (choice < 1 || choice > 2) {
-                cout << "옵션을 잘못 입력하셨습니다. 다시 입력해주세요.\n" << endl;
+            if (choice == 0)
+            {
+                exit(0);
+            }
+            if (choice < 1 || choice > 2)
+            {
+                cout << "옵션을 잘못 입력하셨습니다. 다시 입력해주세요.\n"
+                     << endl;
                 continue;
             }
             return choice;
@@ -167,6 +178,10 @@ void Controller::handleBeverageSelection()
     string menu;
     int count;
     cin >> menu >> count;
+    if (menu == "00")
+    {
+        exit(0);
+    }
     try
     {
         int menuInt = stoi(menu);
@@ -198,11 +213,14 @@ void Controller::handleBeverageSelection()
         if (flag == "other")
         {
             cout << "\n현재 해당 자판기에서 구매가 불가합니다.\n";
-            cout << "(" << x << ", " << y << ") 위치의 자판기에서 구매가 가능합니다.\n" << endl;
-            try {
+            cout << "(" << x << ", " << y << ") 위치의 자판기에서 구매가 가능합니다.\n"
+                 << endl;
+            try
+            {
                 pair<Location, string> response = dvm->requestOrder(stoi(target), request);
                 Card card("");
-                if (!card.processPayment(total_price)) {
+                if (!card.processPayment(total_price))
+                {
                     cout << "결제에 실패하였습니다. 메인 화면으로 돌아갑니다.\n";
                     cout << "계속하려면 Enter를 누르세요..." << endl;
                     cin.ignore();
@@ -214,8 +232,10 @@ void Controller::handleBeverageSelection()
                 cout << "=====================" << endl;
                 cout << "자판기 위치 : (" << loc.getX() << ", " << loc.getY() << ")" << endl;
                 cout << "인증코드 : " << certCode << endl;
-                cout << "=====================" << endl; 
-            } catch (const std::exception& e) {
+                cout << "=====================" << endl;
+            }
+            catch (const std::exception &e)
+            {
                 cout << "[ERROR] 주문 처리 중 문제가 발생했습니다: " << e.what() << endl;
             }
             cout << "\n메인 화면으로 돌아갑니다." << endl;
@@ -229,7 +249,8 @@ void Controller::handleBeverageSelection()
             cout << "음료 가격 총 " << total_price << "원 (" << item_name << " " << countParsed << "개 ";
             cout << total_price / count << "원 * " << count << ")" << endl;
             Card card("");
-            if (!card.processPayment(total_price)) {
+            if (!card.processPayment(total_price))
+            {
                 cout << "결제에 실패하였습니다. 메인 화면으로 돌아갑니다.\n";
                 cout << "계속하려면 Enter를 누르세요..." << endl;
                 cin.ignore();
@@ -276,6 +297,10 @@ void Controller::handlePrepaidPurchase()
             cout << "Enter your prepayment code : ";
             string certCode;
             cin >> certCode;
+            if (certCode == "00")
+            {
+                exit(0);
+            }
 
             if (!regex_match(certCode, certCodePattern))
             {
@@ -290,13 +315,15 @@ void Controller::handlePrepaidPurchase()
             }
             else
             {
-                cout << "선결제 한 음료가 제공되었습니다.\n" << endl;
+                cout << "선결제 한 음료가 제공되었습니다.\n"
+                     << endl;
                 break;
             }
         }
         catch (const exception &e)
         {
-            cout << "인증코드를 잘못 입력하셨습니다. 다시 입력해주세요.\n" << endl;
+            cout << "인증코드를 잘못 입력하셨습니다. 다시 입력해주세요.\n"
+                 << endl;
         }
     }
 
@@ -326,21 +353,21 @@ string Controller::handleCheckStockRequest(const string &msg)
         else if (key == "src_id")
             src_id = value;
     }
-    
+
     string result = dvm->queryStocks(item_code, item_num);
     static std::ofstream logFile("server_log.txt", std::ios::app);
     logFile << "[SERVER] queryStocks: " << result << std::endl;
     auto parsed = parseStockResponse(result);
 
-    string resp_num = "";  // 초기화는 명시적으로
+    string resp_num = ""; // 초기화는 명시적으로
 
-    if(parsed["flag"] == "other")
+    if (parsed["flag"] == "other")
     {
         resp_num = "0";
     }
-    else if(parsed["flag"] == "this")
+    else if (parsed["flag"] == "this")
     {
-        if(parsed.count("count"))
+        if (parsed.count("count"))
             resp_num = parsed["count"];
         else
             resp_num = "0";
@@ -390,7 +417,7 @@ string Controller::handlePrepaymentRequest(const string &msg)
     auto parsed = parseStockResponse(result);
     string availability = "F";
 
-    if(parsed["flag"] == "this")
+    if (parsed["flag"] == "this")
     {
         availability = "T";
         dvm->saveSaleFromOther(item_code, item_num, cert_code);
