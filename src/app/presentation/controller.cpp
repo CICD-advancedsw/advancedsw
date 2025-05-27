@@ -177,8 +177,8 @@ void Controller::handleBeverageSelection()
         cout << drinks;
         cout << "----------------------------------------------------------------------\n"
              << endl;
-
         cout << "Enter menu : ";
+        cout.flush();
 
         struct pollfd pfd = {STDIN_FILENO, POLLIN, 0};
         int ret = poll(&pfd, 1, 20000);
