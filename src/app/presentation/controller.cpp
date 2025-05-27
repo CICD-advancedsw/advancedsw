@@ -196,7 +196,14 @@ void Controller::handleBeverageSelection()
 
         string menu;
         int count;
-        cin >> menu >> count;
+        if (!(cin >> menu >> count))
+        {
+            cin.clear();
+            cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            cout << "\n잘못된 입력입니다. 다시 입력해주세요.\n"
+                 << endl;
+            continue;
+        }
         if (menu == "00")
         {
             exit(0);
@@ -261,7 +268,7 @@ void Controller::handleBeverageSelection()
                 cout << "계속하려면 Enter를 누르세요..." << endl;
                 cin.ignore();
                 cin.get();
-                break;
+                return;
             }
             else if (flag == "this")
             {
@@ -282,7 +289,7 @@ void Controller::handleBeverageSelection()
                 cout << "계속하려면 Enter를 누르세요..." << endl;
                 cin.ignore();
                 cin.get();
-                break;
+                return;
             }
             else if (flag == "not_available")
             {
@@ -291,7 +298,7 @@ void Controller::handleBeverageSelection()
                 cout << "계속하려면 Enter를 누르세요..." << endl;
                 cin.ignore();
                 cin.get();
-                continue;
+                return;
             }
         }
         catch (...)
