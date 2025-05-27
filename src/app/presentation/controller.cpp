@@ -168,56 +168,88 @@ void Controller::handleBeverageSelection()
     cout << "ex) 02 10\n"
          << endl;
 
-    string drinks = dvm->queryItems();
-    cout << "----------------------------------------------------------------------" << endl;
-    cout << drinks;
-    cout << "----------------------------------------------------------------------\n"
-         << endl;
-
-    cout << "Enter menu : ";
-    string menu;
-    int count;
-    cin >> menu >> count;
-    if (menu == "00")
+    while (true)
     {
-        exit(0);
-    }
-    try
-    {
-        int menuInt = stoi(menu);
-        if (menuInt < 1 || menuInt > 20)
-        {
-            cout << "\n메뉴를 잘못 입력하셨습니다. 다시 입력해주세요.\n"
-                 << endl;
-            return;
-        }
-        if (count < 1)
-        {
-            cout << "\n수량을 잘못 입력하셨습니다. 다시 입력해주세요.\n"
-                 << endl;
-            return;
-        }
-        SaleRequest request{menu, count, Item("", "", 0)};
-        string msg = dvm->queryStocks(menu, count);
-        auto parsed = parseStockResponse(msg);
+        string drinks = dvm->queryItems();
+        cout << "----------------------------------------------------------------------" << endl;
+        cout << drinks;
+        cout << "----------------------------------------------------------------------\n"
+             << endl;
 
-        string flag = parsed["flag"];
-        string item_code = parsed["item_code"];
-        int countParsed = parsed.count("count") ? stoi(parsed["count"]) : 0;
-        string target = parsed["target"];
-        string item_name = parsed["item_name"];
-        int total_price = parsed.count("total_price") ? stoi(parsed["total_price"]) : 0;
-        int x = parsed.count("x") ? stoi(parsed["x"]) : 0;
-        int y = parsed.count("y") ? stoi(parsed["y"]) : 0;
-
-        if (flag == "other")
+        cout << "Enter menu : ";
+        string menu;
+        int count;
+        cin >> menu >> count;
+        if (menu == "00")
         {
-            cout << "\n현재 해당 자판기에서 구매가 불가합니다.\n";
-            cout << "(" << x << ", " << y << ") 위치의 자판기에서 구매가 가능합니다.\n"
-                 << endl;
-            try
+            exit(0);
+        }
+        try
+        {
+            int menuInt = stoi(menu);
+            if (menu.length() != 2 || menuInt < 1 || menuInt > 20)
             {
-                pair<Location, string> response = dvm->requestOrder(stoi(target), request);
+                cout << "\n메뉴를 잘못 입력하셨습니다. 다시 입력해주세요.\n"
+                     << endl;
+                continue;
+            }
+            if (count < 1)
+            {
+                cout << "\n수량을 잘못 입력하셨습니다. 다시 입력해주세요.\n"
+                     << endl;
+                continue;
+            }
+            SaleRequest request{menu, count, Item("", "", 0)};
+            string msg = dvm->queryStocks(menu, count);
+            auto parsed = parseStockResponse(msg);
+
+            string flag = parsed["flag"];
+            string item_code = parsed["item_code"];
+            int countParsed = parsed.count("count") ? stoi(parsed["count"]) : 0;
+            string target = parsed["target"];
+            string item_name = parsed["item_name"];
+            int total_price = parsed.count("total_price") ? stoi(parsed["total_price"]) : 0;
+            int x = parsed.count("x") ? stoi(parsed["x"]) : 0;
+            int y = parsed.count("y") ? stoi(parsed["y"]) : 0;
+
+            if (flag == "other")
+            {
+                cout << "\n현재 해당 자판기에서 구매가 불가합니다.\n";
+                cout << "(" << x << ", " << y << ") 위치의 자판기에서 구매가 가능합니다.\n"
+                     << endl;
+                try
+                {
+                    pair<Location, string> response = dvm->requestOrder(stoi(target), request);
+                    Card card("");
+                    if (!card.processPayment(total_price))
+                    {
+                        cout << "결제에 실패하였습니다. 메인 화면으로 돌아갑니다.\n";
+                        cout << "계속하려면 Enter를 누르세요..." << endl;
+                        cin.ignore();
+                        cin.get();
+                        continue;
+                    }
+                    Location loc = response.first;
+                    string certCode = response.second;
+                    cout << "=====================" << endl;
+                    cout << "자판기 위치 : (" << loc.getX() << ", " << loc.getY() << ")" << endl;
+                    cout << "인증코드 : " << certCode << endl;
+                    cout << "=====================" << endl;
+                }
+                catch (const std::exception &e)
+                {
+                    cout << "[ERROR] 주문 처리 중 문제가 발생했습니다: " << e.what() << endl;
+                }
+                cout << "\n메인 화면으로 돌아갑니다." << endl;
+                cout << "계속하려면 Enter를 누르세요..." << endl;
+                cin.ignore();
+                cin.get();
+                break;
+            }
+            else if (flag == "this")
+            {
+                cout << "음료 가격 총 " << total_price << "원 (" << item_name << " " << countParsed << "개 ";
+                cout << total_price / count << "원 * " << count << ")" << endl;
                 Card card("");
                 if (!card.processPayment(total_price))
                 {
@@ -225,61 +257,32 @@ void Controller::handleBeverageSelection()
                     cout << "계속하려면 Enter를 누르세요..." << endl;
                     cin.ignore();
                     cin.get();
-                    return;
+                    continue;
                 }
-                Location loc = response.first;
-                string certCode = response.second;
-                cout << "=====================" << endl;
-                cout << "자판기 위치 : (" << loc.getX() << ", " << loc.getY() << ")" << endl;
-                cout << "인증코드 : " << certCode << endl;
-                cout << "=====================" << endl;
-            }
-            catch (const std::exception &e)
-            {
-                cout << "[ERROR] 주문 처리 중 문제가 발생했습니다: " << e.what() << endl;
-            }
-            cout << "\n메인 화면으로 돌아갑니다." << endl;
-            cout << "계속하려면 Enter를 누르세요..." << endl;
-            cin.ignore();
-            cin.get();
-            return;
-        }
-        else if (flag == "this")
-        {
-            cout << "음료 가격 총 " << total_price << "원 (" << item_name << " " << countParsed << "개 ";
-            cout << total_price / count << "원 * " << count << ")" << endl;
-            Card card("");
-            if (!card.processPayment(total_price))
-            {
-                cout << "결제에 실패하였습니다. 메인 화면으로 돌아갑니다.\n";
+                card.~Card();
+                dvm->requestOrder(request);
+                cout << "\n메인 화면으로 돌아갑니다." << endl;
                 cout << "계속하려면 Enter를 누르세요..." << endl;
                 cin.ignore();
                 cin.get();
-                return;
+                break;
             }
-            card.~Card();
-            dvm->requestOrder(request);
-            cout << "\n메인 화면으로 돌아갑니다." << endl;
-            cout << "계속하려면 Enter를 누르세요..." << endl;
-            cin.ignore();
-            cin.get();
-            return;
+            else if (flag == "not_available")
+            {
+                cout << "\n요청하신 음료(" << item_code << ")는 현재 재고가 없습니다.\n";
+                cout << "\n메인 화면으로 돌아갑니다." << endl;
+                cout << "계속하려면 Enter를 누르세요..." << endl;
+                cin.ignore();
+                cin.get();
+                continue;
+            }
         }
-        else if (flag == "not_available")
+        catch (...)
         {
-            cout << "\n요청하신 음료(" << item_code << ")는 현재 재고가 없습니다.\n";
-            cout << "\n메인 화면으로 돌아갑니다." << endl;
-            cout << "계속하려면 Enter를 누르세요..." << endl;
-            cin.ignore();
-            cin.get();
-            return;
+            cout << "\n메뉴를 잘못 입력하셨습니다. 다시 입력해주세요.\n"
+                 << endl;
+            continue;
         }
-    }
-    catch (...)
-    {
-        cout << "\n메뉴를 잘못 입력하셨습니다. 다시 입력해주세요.\n"
-             << endl;
-        return;
     }
 }
 
