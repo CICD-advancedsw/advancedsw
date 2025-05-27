@@ -1,5 +1,7 @@
 ﻿#include "controller.h"
 #include <fstream>
+#include <poll.h>
+#include <unistd.h>
 
 Controller::Controller(DVM *dvm) : dvm(dvm), location(dvm->getLocation()), stocks(dvm->getStocks()), dvmId(dvm->getDvmId())
 {
@@ -177,6 +179,21 @@ void Controller::handleBeverageSelection()
              << endl;
 
         cout << "Enter menu : ";
+
+        struct pollfd pfd = {STDIN_FILENO, POLLIN, 0};
+        int ret = poll(&pfd, 1, 20000);
+
+        if (ret == 0)
+        {
+            cout << "\n입력 시간이 초과되어 초기화면으로 돌아갑니다.\n";
+            break;
+        }
+        else if (ret < 0)
+        {
+            perror("poll 실패");
+            break;
+        }
+
         string menu;
         int count;
         cin >> menu >> count;
