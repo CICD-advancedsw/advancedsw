@@ -118,7 +118,8 @@ int Controller::displayMenu()
     cout << "희망하는 옵션을 선택해주세요.\n"
          << endl;
     cout << "1. 음료 구매하기" << endl;
-    cout << "2. 선결제 한 음료 받아 가기\n"
+    cout << "2. 선결제 한 음료 받아 가기" << endl;
+    cout << "0. dvm 종료\n"
          << endl;
 
     int choice;
