@@ -33,17 +33,32 @@ pair<string, int> parseIpPort(const string& ipPort) {
 
 int main(int argc, char* argv[])
 {
-  // 내 자판기 포트 하드코딩
-  const int myPort = 9000;
+  // 매개변수 개수 확인
+  if (argc < 2) {
+    cerr << "사용법: " << argv[0] << " <포트번호> [다른자판기IP:PORT] ..." << endl;
+    return 1;
+  }
+  
+  // 첫 번째 매개변수에서 포트 번호 파싱
+  int myPort;
+  try {
+    myPort = stoi(argv[1]);
+    if (myPort <= 0 || myPort > 65535) {
+      throw invalid_argument("포트 번호 범위 오류");
+    }
+  } catch (const exception& e) {
+    cerr << "오류: 포트 번호가 잘못되었습니다 - " << argv[1] << endl;
+    return 1;
+  }
   
   Config::get().setPort(myPort);
   Location loc(1, 2);
 
-  // OtherDVM 리스트 - 명령행 인수에 따라 결정
+  // OtherDVM 리스트 - 두 번째 매개변수부터 다른 DVM 정보들을 파싱
   list<OtherDVM> otherDvms;
   
-  // argc >= 2부터 다른 DVM 정보들을 파싱
-  for (int i = 1; i < argc; i++) {
+  // argc >= 3부터 다른 DVM 정보들을 파싱 (첫 번째는 포트, 두 번째부터 다른 자판기)
+  for (int i = 2; i < argc; i++) {
     try {
       auto [ip, port] = parseIpPort(argv[i]);
       
