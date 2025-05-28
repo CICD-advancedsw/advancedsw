@@ -72,6 +72,12 @@ void Controller::runServer()
             continue;
         }
 
+        struct timeval timeout;
+        timeout.tv_sec = 5;
+        timeout.tv_usec = 0;
+        setsockopt(client_fd, SOL_SOCKET, SO_RCVTIMEO, (char *)&timeout, sizeof(timeout));
+        setsockopt(client_fd, SOL_SOCKET, SO_SNDTIMEO, (char *)&timeout, sizeof(timeout));
+
         char buffer[1024] = {0};
         int bytesRead = ::read(client_fd, buffer, sizeof(buffer));
         if (bytesRead > 0)
@@ -217,6 +223,11 @@ void Controller::handleBeverageSelection()
                 cout << "=====================" << endl; 
             } catch (const std::exception& e) {
                 cout << "[ERROR] 주문 처리 중 문제가 발생했습니다: " << e.what() << endl;
+                cout << "메인 화면으로 돌아갑니다.\n";
+                cout << "계속하려면 Enter를 누르세요..." << endl;
+                cin.ignore();
+                cin.get();
+                return;
             }
             cout << "\n메인 화면으로 돌아갑니다." << endl;
             cout << "계속하려면 Enter를 누르세요..." << endl;
