@@ -9,3 +9,5 @@
 *.lib
 **/.DS_Store
 build/
+server_log.txt
+client_log.txt
