@@ -75,6 +75,12 @@ void Controller::runServer()
             continue;
         }
 
+        struct timeval timeout;
+        timeout.tv_sec = 3;
+        timeout.tv_usec = 0;
+        setsockopt(client_fd, SOL_SOCKET, SO_RCVTIMEO, (char *)&timeout, sizeof(timeout));
+        setsockopt(client_fd, SOL_SOCKET, SO_SNDTIMEO, (char *)&timeout, sizeof(timeout));
+
         char buffer[1024] = {0};
         int bytesRead = ::read(client_fd, buffer, sizeof(buffer));
         if (bytesRead > 0)
@@ -284,6 +290,7 @@ void Controller::handleBeverageSelection()
                     cin.get();
                     continue;
                 }
+
                 card.~Card();
                 dvm->requestOrder(request);
                 cout << "\n메인 화면으로 돌아갑니다." << endl;
