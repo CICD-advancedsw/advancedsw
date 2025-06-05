@@ -16,6 +16,12 @@ bool OtherDVM::establishConnection(int &sock) const {
     serverAddr.sin_port = htons(port);
     inet_pton(AF_INET, targetIp, &serverAddr.sin_addr);
 
+    struct timeval timeout;
+    timeout.tv_sec = 3;
+    timeout.tv_usec = 0;
+    setsockopt(sock, SOL_SOCKET, SO_SNDTIMEO, &timeout, sizeof(timeout));
+
+
     if (connect(sock, (struct sockaddr *)&serverAddr, sizeof(serverAddr)) < 0) {
         cerr << "Connection failed\n";
         close(sock);
@@ -39,7 +45,7 @@ CheckStockResponse OtherDVM::findAvailableStocks(const CheckStockRequest &reques
     }
 
     struct timeval timeout;
-    timeout.tv_sec = 2;
+    timeout.tv_sec = 3;
     timeout.tv_usec = 0;
     setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout));
 
