@@ -40,7 +40,6 @@ jobs:
           ./otherdvm_test || true
           ./controller_test || true
           ./integration_test || true
-          cd ..
 
       - name: Generate Coverage Report
         run: |
@@ -50,7 +49,7 @@ jobs:
 
       - name: Convert gcda to gcov
         run: |
-          find . -name "*.gcda" -exec gcov -o . {} +
+          find . -name "*.gcda" -exec gcov -pb -o build {} +
 
       - name: Run SonarScanner
         run: |
