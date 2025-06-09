@@ -18,27 +18,38 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt update
-          sudo apt install build-essential unzip wget -y
-
-      #- name: Download and extract build-wrapper
-      #  run: |
-      #    wget https://sonarcloud.io/static/cpp/build-wrapper-linux-x86.zip
-      #    unzip build-wrapper-linux-x86.zip
+          sudo apt install -y build-essential cmake lcov libgtest-dev unzip wget
 
       - name: Extract local build-wrapper
-        run: |
-          unzip tools/build-wrapper-linux-x86.zip
+        run: unzip tools/build-wrapper-linux-x86.zip
 
       - name: Build project with build-wrapper
         run: |
-          mkdir bw-output
-          ./build-wrapper-linux-x86/build-wrapper-linux-x86-64 --out-dir bw-output g++ main.cpp -o main
+          mkdir build
+          ./build-wrapper-linux-x86/build-wrapper-linux-x86-64 --out-dir bw-output \
+            cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug
+          cmake --build build
+
+      - name: Run unit tests
+        run: ./build/unit_tests
+
+      - name: Generate coverage report
+        run: |
+          lcov --capture --directory build --output-file coverage.info
+          lcov --remove coverage.info '/usr/*' '*/tests/*' --output-file coverage.info
+          lcov --list coverage.info
 
       - name: Download and run SonarScanner
         run: |
           wget https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-5.0.1.3006-linux.zip
           unzip sonar-scanner-cli-5.0.1.3006-linux.zip
-          sonar-scanner-5.0.1.3006-linux/bin/sonar-scanner
+          sonar-scanner-5.0.1.3006-linux/bin/sonar-scanner \
+            -Dsonar.projectKey=YOUR_PROJECT_KEY \
+            -Dsonar.organization=YOUR_ORG \
+            -Dsonar.sources=src \
+            -Dsonar.tests=tests \
+            -Dsonar.cfamily.build-wrapper-output=bw-output \
+            -Dsonar.coverageReportPaths=coverage.info
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -49,4 +60,3 @@ jobs:
           curl -X POST -H 'Content-type: application/json' \
             --data '{"text":"✅ SonarCloud analysis succeeded for ${{ github.repository }} on `${{ github.ref_name }}`"}' \
             ${{ secrets.SLACK_WEBHOOK_URL }}
-
