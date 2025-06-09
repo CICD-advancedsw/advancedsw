@@ -18,7 +18,7 @@ jobs:
         run: |
           sudo apt update
           sudo apt install -y build-essential cmake lcov libgtest-dev unzip wget
-          pip install gcovr==5.1
+          pip install gcovr==6.0
 
       - name: Extract local build-wrapper
         run: unzip tools/build-wrapper-linux-x86.zip
@@ -49,10 +49,12 @@ jobs:
           
       - name: Generate coverage report
         run: |
-          gcovr -r . --sonarqube -o coverage.xml \
-            --object-directory build \
+          gcovr -r . \
+            --sonarqube \
             --exclude-unreachable-branches \
-            --gcov-ignore-parse-errors
+            --gcov-ignore-parse-errors \
+            --object-directory build \
+            -o coverage.xml
 
       - name: Check coverage.xml
         run: cat coverage.xml
