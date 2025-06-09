@@ -29,9 +29,10 @@ jobs:
           ./build-wrapper-linux-x86/build-wrapper-linux-x86-64 --out-dir bw-output \
             cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug
           cmake --build build
+          make
 
       - name: Run unit tests
-        run: ./build/unit_tests
+        run: ./build/dvm_test
 
       - name: Generate coverage report
         run: |
