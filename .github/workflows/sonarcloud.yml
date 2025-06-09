@@ -23,33 +23,28 @@ jobs:
       - name: Extract local build-wrapper
         run: unzip tools/build-wrapper-linux-x86.zip
 
-      - name: CMake Configure and Build with build-wrapper
+      - name: CMake Configure with Coverage Flags
         run: |
-          mkdir -p build
+          cmake -S . -B build \
+            -DCMAKE_BUILD_TYPE=Debug \
+            -DCMAKE_CXX_FLAGS="--coverage" \
+            -DCMAKE_C_FLAGS="--coverage"
+
+      - name: Build with build-wrapper
+        run: |
           ./build-wrapper-linux-x86/build-wrapper-linux-x86-64 --out-dir bw-output \
-            cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS="--coverage"
-          cmake --build build
+            cmake --build build
 
       - name: Run Tests (all *_test)
         run: |
           cd build
-          chmod +x dvm_test sale_test domain_test otherdvm_test controller_test integration_test || true
-          ./dvm_test || true
-          ./sale_test || true
-          ./domain_test || true
-          ./otherdvm_test || true
-          ./controller_test || true
-          ./integration_test || true
-
-      - name: Generate Coverage Report
-        run: |
-          lcov --capture --directory . --output-file coverage.info --ignore-errors mismatch
-          lcov --remove coverage.info '/usr/*' '*/test/*' --output-file coverage.info
-          lcov --list coverage.info
-
-      - name: Convert gcda to gcov
-        run: |
-          find . -name "*.gcda" -exec gcov -pb -o build {} +
+          ./dvm_test
+          ./sale_test
+          ./domain_test
+          ./otherdvm_test
+          ./controller_test
+          ./integration_test
+          cd ..
 
       - name: Run SonarScanner
         run: |
