@@ -17,7 +17,8 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt update
-          sudo apt install -y build-essential cmake lcov gcovr libgtest-dev unzip wget
+          sudo apt install -y build-essential cmake lcov libgtest-dev unzip wget
+          pip install gcovr==5.1
 
       - name: Extract local build-wrapper
         run: unzip tools/build-wrapper-linux-x86.zip
