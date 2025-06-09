@@ -49,7 +49,9 @@ jobs:
           
       - name: Generate coverage report
         run: |
-          gcovr -r . --sonarqube -o coverage.xml
+          gcovr -r . --sonarqube -o coverage.xml \
+            --exclude-unreachable-branches \
+            --gcov-ignore-parse-errors
 
           
       - name: Run SonarScanner
