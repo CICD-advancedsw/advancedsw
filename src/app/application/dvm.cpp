@@ -1,4 +1,5 @@
 ﻿#include "dvm.h"
+#include <climits>
 
 DVM::DVM(int id, Location loc, map<Item, int> stockList, list<Item> itemList, list<Sale> saleList, list<OtherDVM> otherDvMs)
     : dvmId(id), location(loc), stocks(stockList), items(itemList), sales(saleList), dvms(otherDvMs) { }
