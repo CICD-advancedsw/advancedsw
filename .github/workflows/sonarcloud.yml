@@ -42,9 +42,11 @@ jobs:
           ./integration_test || true
           cd ..
 
-      - name: Generate Coverage Report (gcovr xml format)
+      - name: Generate Coverage Report
         run: |
-          gcovr -r . --xml-pretty -o coverage.xml --gcov-ignore-parse-errors
+          lcov --capture --directory . --output-file coverage.info
+          lcov --remove coverage.info '/usr/*' '*/test/*' --output-file coverage.info
+          lcov --list coverage.info
 
       - name: Run SonarScanner
         run: |
@@ -55,7 +57,7 @@ jobs:
             -Dsonar.organization=virtuoso108 \
             -Dsonar.sources=src \
             -Dsonar.cfamily.build-wrapper-output=bw-output \
-            -Dsonar.coverageReportPaths=coverage.xml
+            -Dsonar.coverageReportPaths=coverage.info
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
