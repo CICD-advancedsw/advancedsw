@@ -45,6 +45,9 @@ jobs:
           ./controller_test
           ./integration_test
           cd ..
+      - name: Convert gcda to gcov
+        run: |
+          find build -name "*.gcda" -exec gcov -pb -o build {} +
 
       - name: Run SonarScanner
         run: |
