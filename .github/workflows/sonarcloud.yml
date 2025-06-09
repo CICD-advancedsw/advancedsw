@@ -25,6 +25,7 @@ jobs:
 
       - name: CMake Configure and Build with build-wrapper
         run: |
+          rm -rf build
           mkdir -p build
           ./build-wrapper-linux-x86/build-wrapper-linux-x86-64 --out-dir bw-output \
             cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS="--coverage"
