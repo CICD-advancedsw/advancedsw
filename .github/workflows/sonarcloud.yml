@@ -49,6 +49,10 @@ jobs:
           lcov --remove coverage.info '/usr/*' '*/test/*' --output-file coverage.info
           lcov --list coverage.info
 
+      - name: Convert gcda to gcov
+        run: |
+          find . -name "*.gcda" -exec gcov -o . {} +
+
       - name: Run SonarScanner
         run: |
           wget https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-5.0.1.3006-linux.zip
