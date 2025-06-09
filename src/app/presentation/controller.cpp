@@ -2,6 +2,7 @@
 #include <fstream>
 #include <poll.h>
 #include <unistd.h>
+#include <limits>
 
 Controller::Controller(DVM *dvm) : dvm(dvm), location(dvm->getLocation()), stocks(dvm->getStocks()), dvmId(dvm->getDvmId())
 {
