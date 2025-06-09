@@ -58,7 +58,7 @@ jobs:
             -Dsonar.organization=virtuoso108 \
             -Dsonar.sources=src \
             -Dsonar.cfamily.build-wrapper-output=bw-output \
-            -Dsonar.coverageReportPaths=coverage.info
+            -Dsonar.cfamily.gcov.reportsPath=.
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
