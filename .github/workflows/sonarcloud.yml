@@ -45,10 +45,13 @@ jobs:
           ./controller_test
           ./integration_test
           cd ..
-      - name: Convert gcda to gcov
-        run: |
-          find build -name "*.gcda" -exec gcov -pb -o build {} +
 
+          
+      - name: Generate coverage report
+        run: |
+          gcovr -r . --sonarqube -o coverage.xml
+
+          
       - name: Run SonarScanner
         run: |
           wget https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-5.0.1.3006-linux.zip
@@ -58,7 +61,7 @@ jobs:
             -Dsonar.organization=virtuoso108 \
             -Dsonar.sources=src \
             -Dsonar.cfamily.build-wrapper-output=bw-output \
-            -Dsonar.cfamily.gcov.reportsPath=.
+            -Dsonar.coverageReportPaths=coverage.xml
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
