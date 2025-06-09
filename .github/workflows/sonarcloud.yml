@@ -51,9 +51,10 @@ jobs:
         run: |
           gcovr -r . \
             --sonarqube \
-            --exclude-unreachable-branches \
-            --gcov-ignore-parse-errors \
             --object-directory build \
+            --exclude ".*CMakeFiles.*" \
+            --exclude-unreachable-branches \
+            --gcov-ignore-errors=no_working_dir_found \
             -o coverage.xml
 
       - name: Check coverage.xml
