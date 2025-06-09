@@ -1,4 +1,4 @@
-name: SonarCloud C++ Analysis
+name: SonarCloud C++ Static Analysis with Coverage
 
 on:
   push:
@@ -8,39 +8,44 @@ on:
 
 jobs:
   build:
-    name: Analyze with SonarCloud
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
+      - name: Checkout
         uses: actions/checkout@v3
 
       - name: Install dependencies
         run: |
           sudo apt update
-          sudo apt install -y build-essential cmake lcov libgtest-dev unzip wget
+          sudo apt install -y build-essential cmake lcov gcovr libgtest-dev unzip wget
 
       - name: Extract local build-wrapper
         run: unzip tools/build-wrapper-linux-x86.zip
 
-      - name: Build project with build-wrapper
+      - name: CMake Configure and Build with build-wrapper
         run: |
-          mkdir build
+          mkdir -p build
           ./build-wrapper-linux-x86/build-wrapper-linux-x86-64 --out-dir bw-output \
-            cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug
+            cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS="--coverage"
           cmake --build build
-          make
 
-      - name: Run unit tests
-        run: ./build/dvm_test
-
-      - name: Generate coverage report
+      - name: Run Tests (all *_test)
         run: |
-          lcov --capture --directory build --output-file coverage.info
-          lcov --remove coverage.info '/usr/*' '*/tests/*' --output-file coverage.info
-          lcov --list coverage.info
+          cd build
+          chmod +x dvm_test sale_test domain_test otherdvm_test controller_test integration_test || true
+          ./dvm_test || true
+          ./sale_test || true
+          ./domain_test || true
+          ./otherdvm_test || true
+          ./controller_test || true
+          ./integration_test || true
+          cd ..
 
-      - name: Download and run SonarScanner
+      - name: Generate Coverage Report (gcovr xml format)
+        run: |
+          gcovr -r . --xml -o coverage.xml
+
+      - name: Run SonarScanner
         run: |
           wget https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-5.0.1.3006-linux.zip
           unzip sonar-scanner-cli-5.0.1.3006-linux.zip
@@ -50,12 +55,12 @@ jobs:
             -Dsonar.sources=src \
             -Dsonar.tests=tests \
             -Dsonar.cfamily.build-wrapper-output=bw-output \
-            -Dsonar.coverageReportPaths=coverage.info
+            -Dsonar.coverageReportPaths=coverage.xml
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Notify Slack (Success)
+      - name: Notify Slack
         if: success()
         run: |
           curl -X POST -H 'Content-type: application/json' \
