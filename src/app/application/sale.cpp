@@ -12,8 +12,12 @@ using namespace std;
 Sale::Sale(SaleRequest request) 
     : saleId(""), datetime(""), item(request.item), 
     count(request.itemNum), totalAmount(0), prepayment(nullptr) {
-    time_t now = time(0);
-    datetime = ctime(&now);
+
+    time_t now = time(nullptr);
+    char buf[26];
+    ctime_r(&now, buf);
+    datetime = string(buf);
+
     saleId = "SALE_" + to_string(now);
     totalAmount = item.calculatePrice(count);
 }
