@@ -4,15 +4,16 @@
 #include <string>
 #include "certificationcode.h"
 
-class Prepayment {
+class Prepayment
+{
 private:
     int dvmId;
     CertificationCode certCode;
 
 public:
-    Prepayment(int dvmId);
-    Prepayment(int dvmId, CertificationCode certCode);
-    bool isCertificationCode(const std::string& inputCertCode);
+    explicit Prepayment(int dvmId);
+    explicit Prepayment(int dvmId, CertificationCode certCode);
+    bool isCertificationCode(const std::string &inputCertCode);
 };
 
 #endif // PREPAYMENT_H
