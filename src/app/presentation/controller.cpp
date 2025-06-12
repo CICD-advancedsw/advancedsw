@@ -109,7 +109,6 @@ void Controller::runServer()
             {
                 logFile << "[SERVER] Send failed" << std::endl;
             }
-            // ::send(client_fd, response.c_str(), response.size(), 0);
         }
 
         ::close(client_fd);
