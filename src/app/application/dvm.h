@@ -30,6 +30,16 @@ private:
     
     // 재고를 감소시키는 메서드
     void decreaseStock(const string& itemCode, int count);
+    
+    // 응답 메시지 생성 헬퍼 메서드들
+    string buildThisResponse(const string& itemCode, int count);
+    string buildOtherResponse(const string& itemCode, int count, OtherDVM* nearestDvm);
+    
+    // 재고가 있는 가장 가까운 DVM 찾기
+    OtherDVM* findNearestDvmWithStock(const string& itemCode, int count);
+    
+    // ID로 DVM 찾기
+    OtherDVM* findDvmById(int targetDvmId);
 
 public:
     DVM(int id, Location loc, map<Item, int> stockList, list<Item> itemList, list<Sale> saleList, list<OtherDVM> otherDvMs); // 생성자를 통한 의존성 주입    
